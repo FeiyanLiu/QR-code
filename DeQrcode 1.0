@@ -1,0 +1,32 @@
+def decode():
+    img = cv2.imread(r'/Users/xianfu/PycharmProjects/project1.1/project1outpic/1.png')
+    pic_number =1
+    countx = 128
+    county = 128
+    bin1 = ''
+    bin_number = 0
+    str1 = ""
+    while county < 400 :
+        if np.sum(img[countx:countx+16,county:county+16])<32640:
+            bin1=bin1+'1'
+        else: bin1=bin1+'0'
+        bin_number+=1
+        #print(bin1)
+        if bin_number == 8:
+            bin1=bin1+" "
+            bin_number=0
+        countx+=16
+        if countx == 400 :
+            countx = 128
+            county += 16
+            if county == 400:
+                pic_number+=1
+                img = cv2.imread(r'/Users/xianfu/PycharmProjects/project1.1/project1outpic/'+str(pic_number)+'.png')
+                #print(type(img))
+                #print(pic_number)
+                if  type(img) != type(None):
+                    county = 128
+                else :
+                    county = 500
+
+    print(bin2str(bin1))
