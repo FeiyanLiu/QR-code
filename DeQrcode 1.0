@@ -7,7 +7,7 @@ def decode():
     bin_number = 0
     str1 = ""
     while county < 400 :
-        if np.sum(img[countx:countx+16,county:county+16])<32640:
+        if np.sum(img[countx:countx+16,county:county+16])<32640:#这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             bin1=bin1+'1'
         else: bin1=bin1+'0'
         bin_number+=1
@@ -21,7 +21,7 @@ def decode():
             county += 16
             if county == 400:
                 pic_number+=1
-                img = cv2.imread(r'/Users/xianfu/PycharmProjects/project1.1/project1outpic/'+str(pic_number)+'.png')
+                img = cv2.imread(r'/Users/xianfu/PycharmProjects/project1.1/project1outpic/'+str(pic_number)+'.png')#这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
                 #print(type(img))
                 #print(pic_number)
                 if  type(img) != type(None):
