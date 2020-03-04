@@ -88,57 +88,56 @@ def encode():
         if QR_print_number<QR_number:#判断此时是否需要再将图片打印出来
             cv2.imwrite(r'C:/Users/77443/Desktop/project1.1/project1pic/' + str(QR_number) + '.png', img)
 def decode():
- img_path=gb.glob("C:/Users/77443/Desktop/project1.1/project1outpic/*.png")
- for path in img_path:
-    img = cv2.imread(path)
-
-    pic_number = 1
-    size=512
-    lpsize=128
-    cube=16
-    countx = 0
-    county = lpsize
-    bin1 = ''
-    bin_number = 0
-    str1 = ""
-    while countx < size:
-        if np.sum(img[countx:countx + cube, county:county + cube]) < 32640:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
-            bin1 = bin1 + '1'
-        else:
-            bin1 = bin1 + '0'
-        bin_number += 1
-        # print(bin1)
-        if bin_number == 8:
-            #bin1 = bin1 + " "
-            bin_number = 0
-        county += cube
-        #这一块的分类讨论和encode是一样的
-        if county == size - lpsize and countx < lpsize - cube:
-            county = lpsize
-            countx += cube  # 到达下一行
-        elif county == size - lpsize and countx == lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx < size - lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx == size - lpsize - cube:
-            county = lpsize
-            countx += cube
-        elif county == size and countx >= size - lpsize:
-            county = lpsize
-            countx += cube
-        if countx == size and county == size:
-            pic_number += 1
-            img = cv2.imread(r'C:/Users/77443/Desktop/project1.1/project1outpic/' + str(
-                    pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
-            # print(type(img))
-            # print(pic_number)
-            if type(img) != type(None):
-                county = lpsize
+    img_path=gb.glob("C:/Users/77443/Desktop/project1.1/project1outpic/*.png")
+    for path in img_path:
+        img = cv2.imread(path)
+        pic_number = 1
+        size=512
+        lpsize=128
+        cube=16
+        countx = 0
+        county = lpsize
+        bin1 = ''
+        bin_number = 0
+        str1 = ""
+        while countx < size:
+            if np.sum(img[countx:countx + cube, county:county + cube]) < 32640:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+                bin1 = bin1 + '1'
             else:
-                countx=520
-    print(bintostr(bin1))
+                bin1 = bin1 + '0'
+            bin_number += 1
+            # print(bin1)
+            if bin_number == 8:
+                #bin1 = bin1 + " "
+                bin_number = 0
+            county += cube
+            #这一块的分类讨论和encode是一样的
+            if county == size - lpsize and countx < lpsize - cube:
+                county = lpsize
+                countx += cube  # 到达下一行
+            elif county == size - lpsize and countx == lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx < size - lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx == size - lpsize - cube:
+                county = lpsize
+                countx += cube
+            elif county == size and countx >= size - lpsize:
+                county = lpsize
+                countx += cube
+            if countx == size and county == size:
+                pic_number += 1
+                img = cv2.imread(r'C:/Users/77443/Desktop/project1.1/project1outpic/' + str(
+                        pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
+                # print(type(img))
+                # print(pic_number)
+                if type(img) != type(None):
+                    county = lpsize
+                else:
+                    countx=520
+        print(bintostr(bin1))
 
 def bintostr(s):
     count = 0
