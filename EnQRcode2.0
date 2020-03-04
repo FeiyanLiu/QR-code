@@ -88,7 +88,7 @@ def encode():
         if QR_print_number<QR_number:#判断此时是否需要再将图片打印出来
             cv2.imwrite(r'C:/Users/77443/Desktop/project1.1/project1pic/' + str(QR_number) + '.png', img)
 def decode():
- img_path=gb.glob("C:/Users/77443/Desktop/project1.1/project1outpic/3.png")
+ img_path=gb.glob("C:/Users/77443/Desktop/project1.1/project1outpic/*.png")
  for path in img_path:
     img = cv2.imread(path)
 
