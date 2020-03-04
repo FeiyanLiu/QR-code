@@ -198,8 +198,8 @@ def bintostr(s):
 
 #方便修改参数
 size = 512  # 图片尺寸
-cube = 8  # 每个单元的大小
-lpsize = cube * 8  # 定位点尺寸 8的倍数
+cube = 16  # 每个单元的大小
+lpsize = cube * 8  # 定位点尺寸 cube的8倍
 if __name__ == "__main__":
 
     encode()
