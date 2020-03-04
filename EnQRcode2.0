@@ -108,7 +108,7 @@ def decode():
         if bin_number == 8:
             #bin1 = bin1 + " "
             bin_number = 0
-        countx += cube
+        county += cube
         #这一块的分类讨论和encode是一样的
         if county == size - lpsize and countx < lpsize - cube:
             county = lpsize
