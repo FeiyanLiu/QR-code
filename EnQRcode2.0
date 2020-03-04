@@ -13,11 +13,12 @@ def str2bin(s):
         temp.append(bin(c).replace('0b',''))
     str_bin=' '.join(temp)
     return str_bin
-def newQrcode(size,lpsize):#初始化二维码（一个一个打出来的，三个定位点
+def newQrcode(size,cube):#初始化二维码（一个一个打出来的，三个定位点
 
      # location point size定位点尺寸
      # print((lpsize*6)/7)
      #用参数表示每个边的坐标
+    lpsize = cube * 8  # 定位点尺寸 8的倍数
     img = np.ones((size, size), dtype=np.uint8)
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize*7/8), 0:int(lpsize*7/8)] = 0
@@ -36,14 +37,14 @@ def newQrcode(size,lpsize):#初始化二维码（一个一个打出来的，三�
     img[int(lpsize*2/8):int(lpsize*5/8), size-int(lpsize*5/8):size-int(lpsize*2/8)] = 0
      #右上角
     return img
-def encode():
+def encode(size,cube):
     file=open(r'C:/Users/77443/Desktop/project1.1/test.txt','rb')
     str1=file.read()
     print(str1)
     str2 = str2bin(str1)
     size=512   #图片尺寸
-    lpsize=128  #定位点尺寸 8的倍数
-    cube=16 #每个单元的大小
+    cube = 16  # 每个单元的大小
+    lpsize=cube*8  #定位点尺寸 8的倍数
     countx=0
     county=lpsize
     QR_number=1
@@ -84,11 +85,10 @@ def encode():
         if QR_print_number<QR_number:#判断此时是否需要再将图片打印出来
             cv2.imwrite(r'C:/Users/77443/Desktop/project1.1/project1pic/' + str(QR_number) + '.png', img)
 
-def decode():
+def decode(size,cube):
     img = cv2.imread(r'C:/Users/77443/Desktop/project1.1/project1outpic/1.png')
     pic_number = 1
-    size=512
-    lpsize=128
+    lpsize=cube*8
     cube=16
     countx = 0
     county = lpsize
@@ -205,12 +205,12 @@ def bintostr(s):
 
 
 if __name__ == "__main__":
-    encode()
+    encode(512,16) #图片尺寸512*512 每一个小方块尺寸是16*16
     ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i C:/Users/77443/Desktop/project1.1/project1pic/%d.png -y'}, outputs={'test.mp4': None})
     ffin.run()
     ffout = FFmpeg(inputs={'': '-i test.mp4 -r 5 -f image2 %d.png -y'}, outputs={'C:/Users/77443/Desktop/project1.1/project1outpic/%d.png': None})
     ffout.run()
-    decode()
+    decode(512,16)
 
 
 '''
