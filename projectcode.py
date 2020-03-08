@@ -8,6 +8,8 @@ from ffmpy3 import FFmpeg
 import cv2
 import numpy as np
 import glob as gb
+import locate
+
 
 def str2bin(s):
     temp=[]
@@ -114,6 +116,9 @@ def encode():
 
 def decode():
     img = cv2.imread(r'G:/project1outpic/1.png')
+    cv2.imshow("img",img)
+    contours, hierachy = locate.detect(img)
+    locate.find(img, contours, np.squeeze(hierachy))
     pic_number = 1
     size = 512
     lpsize = 128
@@ -160,6 +165,8 @@ def decode():
 
             # print(pic_number)
             if type(img) != type(None):
+                contours, hierachy = locate.detect(img)
+                locate.find(img, contours, np.squeeze(hierachy))
                 county = lpsize
                 countx=0
             else:
@@ -248,17 +255,16 @@ def bintostr(s):
             outStr = outStr + (chr(sum))
             sum = 0
 
-    #print(outStr)
+    print(outStr)
     return outStr
 
 
 
-
-
+#
 if __name__ == "__main__":
     encode()
     ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i G:/project1pic/%d.png -y'}, outputs={'test.mp4': None})
     ffin.run()
-    ffout = FFmpeg(inputs={'': '-i test.mp4 -r 5 -f image2 %d.png -y'}, outputs={'G:/project1outpic/%d.png': None})
+    ffout = FFmpeg(inputs={'': '-i test1.mp4 -r 30 -f image2 %d.png -y'}, outputs={'G:/project1outpic/%d.png': None})
     ffout.run()
     decode()
