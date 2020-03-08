@@ -9,6 +9,10 @@ import cv2
 import numpy as np
 import copy
 
+
+
+
+
 def detect(image):
 
     width,height=image.shape[:2][::-1]
@@ -16,8 +20,8 @@ def detect(image):
     retval,binary=cv2.threshold(img_gray,0,255,cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)
     contours,hierarchy=cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     #cv2.drawContours(img,contours,-1,(0,0,255),3)
-    #cv2.imshow("img",img)
-    #cv2.waitKey()
+    #cv2.imshow("img",image)
+    cv2.waitKey()
     return contours,hierarchy
 
 def get_scale1(contours,i,j):
@@ -105,14 +109,20 @@ def find(image,contours,hierachy,root=0):
     cv2.imshow('img', result)
     cv2.waitKey(0)
     new_image = copy.deepcopy(image)
-    min=box[0][0]
-    max=box[0][0]
+
 
     leftup=box[1][1]
     rightup=box[0][1]
     leftbuttom=box[0][0]
     rightbuttom=box[2][0]
+    leftup = box[2][1]
+    rightup = box[0][1]
+    leftbuttom = box[1][0]
+    rightbuttom = box[3][0]
+
+
     new_image=image[leftup:rightup,leftbuttom:rightbuttom]
+    #new_image=image[43:1025,403:1387]
     cv2.imshow('img', new_image)
     cv2.waitKey(0)
     new_image1=cv2.resize(new_image,(512,512))
@@ -123,12 +133,13 @@ def find(image,contours,hierachy,root=0):
 
 
 
-
+#
 if __name__ == "__main__":
-    #img_path=r'G:/project1outpic/1.jpg'
-    img_path = r'G:/project1outpic/1.png'
+
+    img_path = r'G:/project1outpic/9.png'
     img_path = r'G:/test2.jpg'
-    #img_path = r'G:/test1.jpg'
+    img_path = r'G:/test.jpg'
+    #img_path=r'G:/project1pic/1.png'
     img=cv2.imread(img_path)
     contours,hierachy=detect(img)
     find(img,contours,np.squeeze(hierachy))
