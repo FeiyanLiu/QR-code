@@ -104,9 +104,9 @@ def find(image,contours,hierachy,root=0):
     #cv2.drawContours(image, contours, rec[i][6], (255, 0, 0), 2)
     #cv2.drawContours(image, contours, rec[j][6], (255, 0, 0), 2)
     #cv2.drawContours(image, contours, rec[k][6], (255, 0, 0), 2)
-    cv2.imshow('img', image)
+    #cv2.imshow('img', image)
     cv2.waitKey(0)
-    cv2.imshow('img', result)
+    #cv2.imshow('img', result)
     cv2.waitKey(0)
     new_image = copy.deepcopy(image)
 
@@ -128,18 +128,92 @@ def find(image,contours,hierachy,root=0):
     new_image1=cv2.resize(new_image,(512,512))
     cv2.imshow('img', new_image1)
     cv2.waitKey(0)
-    return
+    return new_image1
 
+def bintostr(s):
+    count = 0
+    sum = 0
+    outStr = ''
+    for i in s:
+        temp = (ord(i)-ord("0")) * pow(2, 7 - count)
+        sum += temp
+        count += 1
+        if (count == 8):
+            count = 0
 
+            if(sum==255):
+                return outStr
+            outStr = outStr + (chr(sum))
+            sum = 0
+
+    print(outStr)
+    return outStr
+
+def decode(img):
+    cv2.imshow("img",img)
+    contours, hierachy = detect(img)
+    img=find(img, contours, np.squeeze(hierachy))
+    if(type(img)==type(None)):
+        print("未检测到定位点")
+        return
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY+cv2.THRESH_BINARY_INV)
+    cv2.imshow("img222",gray)
+    cv2.waitKey()
+    pic_number = 1
+    size = 512
+    lpsize = 128
+    cube = 16
+    countx = 0
+    county = lpsize
+    bin1 = ''
+    bin_number = 0
+    str1 = ""
+    while countx < size:
+        #print(np.sum(img[countx:countx + cube, county:county + cube]))
+        if np.sum(img[countx:countx + cube, county:county + cube]) < 70000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+            bin1 = bin1 + '1'
+        else:
+            bin1 = bin1 + '0'
+        bin_number += 1
+        # print(bin1)
+        if bin_number == 8:
+            # bin1 = bin1 + " "
+            bin_number = 0
+        county += cube
+        # 这一块的分类讨论和encode是一样的
+        if county == size - lpsize and countx < lpsize - cube:
+            county = lpsize
+            countx += cube  # 到达下一行
+        elif county == size - lpsize and countx == lpsize - cube:
+            county = 0
+            countx += cube
+        elif county == size and countx < size - lpsize - cube:
+            county = 0
+            countx += cube
+        elif county == size and countx == size - lpsize - cube:
+            county = lpsize
+            countx += cube
+        elif county == size and countx >= size - lpsize:
+            county = lpsize
+            countx += cube
+
+        if countx == size and county == lpsize:
+
+            pic_number += 1
+            countx = 520
+    print(bin1)
+    print(bintostr(bin1))
 
 
 #
 if __name__ == "__main__":
 
-    img_path = r'G:/project1outpic/9.png'
-    img_path = r'G:/test2.jpg'
+    img_path = r'G:/project1pic/1.png'
+    #img_path = r'G:/test1.jpg'
     img_path = r'G:/test.jpg'
     #img_path=r'G:/project1pic/1.png'
     img=cv2.imread(img_path)
-    contours,hierachy=detect(img)
-    find(img,contours,np.squeeze(hierachy))
+    #contours,hierachy=detect(img)
+    #find(img,contours,np.squeeze(hierachy))
+    decode(img)
