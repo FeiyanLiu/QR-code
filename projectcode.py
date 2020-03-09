@@ -107,12 +107,31 @@ def encode():
                 county = lpsize
                 countx += cube
             if countx == size and county == lpsize:
+                img=combine_QR_code(img)
                 cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
                 QR_print_number += 1
-                img = newQrcode(512, 128);
-        if QR_print_number < QR_number:  # 判断此时是否需要再将图片打印出来
-            cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
+                img = newQrcode(512, 128)
+    if QR_print_number < QR_number:  # 判断此时是否需要再将图片打印出来
+        img = combine_QR_code(img)
+        cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
 
+
+def combine_QR_code(img):
+    size = 512  # 图片尺寸
+    cube = 16  # 每个单元的大小
+    lpsize =128  # 定位点尺寸 8的倍数
+    #img=cv2.imread(img_path)
+    background=np.ones((size+32,size+32),dtype=np.uint8)*255
+    background=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
+    img=cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+    for i in range(16, 528):
+        for j in range(16, 528):
+            background[i, j, 0] = img[i - 16, j - 16, 0]
+            background[i, j, 1] = img[i - 16, j - 16, 1]
+            background[i, j, 2] = img[i - 16, j - 16, 2]
+    return background
+    #cv2.imshow("last",background)
+    #cv2.waitKey()
 
 def decode():
     img = cv2.imread(r'G:/project1outpic/1.png')
@@ -263,8 +282,9 @@ def bintostr(s):
 #
 if __name__ == "__main__":
     encode()
-    ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i G:/project1pic/%d.png -y'}, outputs={'test.mp4': None})
-    ffin.run()
-    ffout = FFmpeg(inputs={'': '-i test1.mp4 -r 30 -f image2 %d.png -y'}, outputs={'G:/project1outpic/%d.png': None})
-    ffout.run()
-    decode()
+    #combine_QR_code(r'G:/project1pic/1.png')
+    # ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i G:/project1pic/%d.png -y'}, outputs={'test.mp4': None})
+    # ffin.run()
+    # ffout = FFmpeg(inputs={'': '-i test1.mp4 -r 5 -f image2 -y'}, outputs={'G:/project1outpic/%d.png': None})
+    # ffout.run()
+    # decode()
