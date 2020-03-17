@@ -15,9 +15,9 @@ def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，
 
     # location point size定位点尺寸
     # 用参数表示每个边的坐标
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14 # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = cube * 10 # 定位点尺寸 8的倍数
     img = np.ones((size, size,3), dtype=np.uint8)
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
@@ -41,9 +41,9 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
 
     # location point size定位点尺寸
     # 用参数表示每个边的坐标
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = cube * 10  # 定位点尺寸 8的倍数
     img = np.ones((size, size,3), dtype=np.uint8)
     img[0:size,0:size]=255
     img[0:int(lpsize), 0:int(lpsize)] = 255
@@ -65,9 +65,9 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     return img
 
 def encode_start():
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = cube * 10  # 定位点尺寸 8的倍数
     countx = 0
     county = lpsize
     QR_number = 2
@@ -86,9 +86,9 @@ def encode():
     #print(str1)
     str2 = str2bin(str1)
     #rint(str2)
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = cube * 10  # 定位点尺寸 8的倍数
     countx = 0
     county = lpsize
     QR_number = 3
@@ -137,7 +137,7 @@ def encode():
                     img = combine_QR_code(img)
                     cv2.imwrite(r'/Volumes/LaCie/PythonCode/project1.2/project1pic/' + str(QR_number) + '.png', img)
                     QR_print_number += 1
-                    img = newQrcode(1024, 128)
+                    img = newQrcode(1000, 200)
                     colorstate=0
                 else:
                     #print(colorstate)
@@ -148,28 +148,28 @@ def encode():
 
 
 def combine_QR_code(img):
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize =192  # 定位点尺寸 8的倍数
-    background=np.ones((size+32,size+32),dtype=np.uint8)*255
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize =200  # 定位点尺寸 8的倍数
+    background=np.ones((size+40,size+40),dtype=np.uint8)*255
     background=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
-    for i in range(16, 1040):
-        for j in range(16, 1040):
-            background[i, j, 0] = img[i - 16, j - 16, 0]
-            background[i, j, 1] = img[i - 16, j - 16, 1]
-            background[i, j, 2] = img[i - 16, j - 16, 2]
+    for i in range(20, 1020):
+        for j in range(20, 1020):
+            background[i, j, 0] = img[i - 20, j - 20, 0]
+            background[i, j, 1] = img[i - 20, j - 20, 1]
+            background[i, j, 2] = img[i - 20, j - 20, 2]
     return background
 
 def decode_start(img):
     if(type(img)==type(None)):
         return False
-    size = 1024
-    lpsize = 192
-    cube = 16
+    size = 1000
+    lpsize = 200
+    cube = 20
     countx = 0
     county = lpsize
     while countx < size:
-        if np.sum(img[countx:countx + cube, county:county + cube,0]) > 32640:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+        if np.sum(img[countx:countx + cube, county:county + cube,0]) > 60000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -193,11 +193,11 @@ def decode_start(img):
 def decode():
     #cv2.imshow("img",img)
     pic_number = 1
-    size = 1024
-    lpsize = 224
-    cube = 16
+    size = 1000
+    lpsize = 200
+    cube = 20
     countx = 0
-    county = 224
+    county = 200
     bin1 = ''
     str1 = ""
     '''
@@ -234,7 +234,7 @@ def decode():
     while colorstate<2:
         count+=1
         while countx < size:
-            if np.sum(img[countx:countx + cube, county:county + cube,colorstate]) < 32640:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+            if np.sum(img[countx:countx + cube, county:county + cube,colorstate]) < 60000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
                 bin1 = bin1 + '1'
             else:
                 bin1 = bin1 + '0'
@@ -270,7 +270,7 @@ def decode():
                     countx = 0
 
                 else:
-                    countx = 1032
+                    countx = 1020
                     colorstate = 3
     print(bin1)
     print(bintostr(bin1))
