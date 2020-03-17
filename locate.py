@@ -140,7 +140,7 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     #new_image=image[43:1025,403:1387]
     #cv2.imshow('img', new_image)
     #cv2.waitKey(0)
-    new_image1=cv2.resize(new_image,(512,512))
+    new_image1=cv2.resize(new_image,(1000,1000))
     #cv2.imshow('img', new_image1)
     #cv2.waitKey(0)
     return new_image1
