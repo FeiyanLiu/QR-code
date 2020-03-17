@@ -17,4 +17,5 @@ with open ("vout.bin",'w') as fileOut :#创建vout.bin文件并输出结果
                 fileOut.write("0")
             j+=1
         i+=1
+        
 
