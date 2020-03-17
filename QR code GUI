@@ -1,0 +1,44 @@
+from tkinter import messagebox
+from tkinter.filedialog import *
+
+root =Tk()
+root.title('QR code')
+textPath = StringVar()
+videoPath=StringVar()
+outPath=StringVar()
+
+def selectFilePath():
+    path_ = askopenfilename()
+    textPath.set(path_)
+# 选取文件路径
+def selectDirectoryPath():
+    path_ = askdirectory()
+    videoPath.set(path_)
+#选取文件夹路径
+def decode():
+    print("decode")
+    i = messagebox.showinfo('消息框','编码完成！请到相关路径下查看文件！')
+    print(i)#解码结束设置弹框提醒
+def encode():
+    print("encode")
+    i = messagebox.showinfo('消息框', '编码完成！请到相关路径下查看文件！')
+    print(i)  # 编码结束设置弹框提醒
+Label(root,text = "上传二进制文件:").grid(row = 1, column = 1,padx=20,pady=20,stick=E)
+Entry(root,textvariable = textPath).grid(row = 1, column = 3,padx=20,pady=20)
+Button(root, text = "路径选择", command = selectFilePath).grid(row = 1, column = 4)
+Label(root,text = "保存编码视频:").grid(row = 3, column = 1,padx=20,pady=20,stick=E)
+Entry(root,textvariable = videoPath).grid(row = 3, column = 3,padx=20,pady=20)
+Button(root, text = "路径选择", command =selectDirectoryPath).grid(row = 3, column = 4)
+Button(root, text = "   确认   ", command = encode).grid(row = 5, column =4,padx=20,pady=20,stick=E )#点击确认启动编码
+Label(root,text = "上传解码视频:").grid(row = 7, column = 1,padx=20,pady=20,stick=E)
+Entry(root,textvariable = outPath).grid(row = 7, column = 3,padx=20,pady=20)
+Button(root, text = "路径选择", command = selectFilePath).grid(row = 7, column = 4)
+Label(root,text = "保存解码文本:").grid(row = 9, column = 1,padx=20,pady=20,stick=E)
+Entry(root,textvariable = outPath).grid(row = 9, column = 3,padx=20,pady=20)
+Button(root, text = "路径选择", command = selectDirectoryPath).grid(row =9, column = 4)
+Label(root,text = "保存对比文件:").grid(row = 11, column = 1,padx=20,pady=20,stick=E)
+Entry(root,textvariable = outPath).grid(row = 11, column = 3,padx=20,pady=20)
+Button(root, text = "路径选择", command = selectDirectoryPath).grid(row =11, column = 4)
+Button(root, text = "   确认   ", command = decode).grid(row = 13, column =4,padx=20,pady=20,stick=E )#点击确认启动解码
+
+root.mainloop()
