@@ -41,10 +41,10 @@ def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，
     # location point size定位点尺寸
     # print((lpsize*6)/7)
     # 用参数表示每个边的坐标
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
-    img = np.ones((size, size), dtype=np.uint8)
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = 200  # 定位点尺寸 8的倍数
+    img = np.ones((size, size,3), dtype=np.uint8)
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
     img[int(lpsize / 8):int(lpsize * 6 / 8), int(lpsize / 8):int(lpsize * 6 / 8)] = 255
@@ -68,10 +68,10 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     # location point size定位点尺寸
     # print((lpsize*6)/7)
     # 用参数表示每个边的坐标
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14 # 定位点尺寸 8的倍数
-    img = np.ones((size, size), dtype=np.uint8)
+    size = 1000  # 图片尺寸
+    cube = 20 # 每个单元的大小
+    lpsize = 200 # 定位点尺寸 8的倍数
+    img = np.ones((size, size,3), dtype=np.uint8)
     img[0:size,0:size]=255
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
@@ -92,9 +92,9 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     return img
 
 def encode_start():
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = 200  # 定位点尺寸 8的倍数
     countx = 0
     county = lpsize
     QR_number = 2
@@ -112,16 +112,17 @@ def encode():
     str1 = file.read()
     print(str1)
     str2 = str2bin(str1)
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize = cube * 14  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize = 200  # 定位点尺寸 8的倍数
     countx = 0
     county = lpsize
     QR_number = 3
     QR_print_number = 0
     encode_start()
     img = newQrcode(size, lpsize)
-
+    B, G, R = cv2.split(img)
+    colorstate = 0
 
 
     for c in str1:
@@ -129,13 +130,14 @@ def encode():
         b = b.rjust(8, '0')
         for b1 in b:
             if countx == size:
-                QR_number += 1
+                if colorstate==0:
+                    QR_number += 1
                 county = lpsize
                 countx = 0
             if b1 == '0':
-                img[countx:countx + cube, county:county + cube] = 255  # 16*16的小方格视为为一个单位
+                img[countx:countx + cube, county:county + cube,colorstate] = 255  # 16*16的小方格视为为一个单位
             else:
-                img[countx:countx + cube, county:county + cube] = 0  # 0白1黑
+                img[countx:countx + cube, county:county + cube,colorstate] = 0  # 0白1黑
             county += cube
             # 按照区域对于county如何变化分类讨论
             if county == size - lpsize and countx < lpsize - cube:
@@ -154,28 +156,31 @@ def encode():
                 county = lpsize
                 countx += cube
             if countx == size and county == lpsize:
-                img=combine_QR_code(img)
-                cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
-                QR_print_number += 1
-                img = newQrcode(1024, 192)
+                if colorstate==2:
+                    img=combine_QR_code(img)
+                    cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
+                    QR_print_number += 1
+                    img = newQrcode(1000, 200)
+                    colorstate=0
+                else: colorstate+=1
     if QR_print_number < QR_number:  # 判断此时是否需要再将图片打印出来
         img = combine_QR_code(img)
         cv2.imwrite(r'G:/project1pic/' + str(QR_number) + '.png', img)
 
 
 def combine_QR_code(img):
-    size = 1024  # 图片尺寸
-    cube = 16  # 每个单元的大小
-    lpsize =224  # 定位点尺寸 8的倍数
+    size = 1000  # 图片尺寸
+    cube = 20  # 每个单元的大小
+    lpsize =200  # 定位点尺寸 8的倍数
     #img=cv2.imread(img_path)
-    background=np.ones((size+32,size+32),dtype=np.uint8)*255
+    background=np.ones((size+40,size+40),dtype=np.uint8)*255
     background=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
-    img=cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-    for i in range(16, 1040):
-        for j in range(16, 1040):
-            background[i, j, 0] = img[i - 16, j - 16, 0]
-            background[i, j, 1] = img[i - 16, j - 16, 1]
-            background[i, j, 2] = img[i - 16, j - 16, 2]
+    #img=cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+    for i in range(20, 1020):
+        for j in range(20, 1020):
+            background[i, j, 0] = img[i - 20, j - 20, 0]
+            background[i, j, 1] = img[i - 20, j - 20, 1]
+            background[i, j, 2] = img[i - 20, j - 20, 2]
     return background
     #cv2.imshow("last",background)
     #cv2.waitKey()
@@ -185,15 +190,15 @@ def combine_QR_code(img):
 def decode_start(img):
     if(type(img)==type(None)):
         return False
-    size = 1024
+    size = 1000
 
-    lpsize = 224
-    cube = 16
+    lpsize = 200+20
+    cube = 20
     countx = 0
     county = lpsize
     while countx < size:
-        # print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) > 125000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+        #print(np.sum(img[countx:countx + cube, county:county + cube]))
+        if np.sum(img[countx:countx + cube, county:county + cube]) > 150000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -218,25 +223,31 @@ def decode_start(img):
 def decode():
     #cv2.imshow("img",img)
     pic_number = 1
-    size = 1024
-    lpsize = 224
-    cube = 16
+    size = 1000
+    lpsize = 200
+    cube = 20
     countx = 0
     county = lpsize
     bin1 = ''
     bin_number = 0
     str1 = ""
+    colorstate=0
+    count=101
+
+
     img = cv2.imread(r'G:/project1outpic/1.png')
     if(type(img)==type(None)):
-        print("未检测到定位点")
+        return
     contours, hierachy = locate.detect(img)
     img=locate.find(img, contours, np.squeeze(hierachy))
-
+    #cv2.imshow("2",img)
     while(not decode_start(img)):
         pic_number+=1
-
+        #print(pic_number)
         img = cv2.imread(r'G:/project1outpic/' + str(pic_number) + '.png')
-        if(type(img) == type(None)):return
+        if(type(img) == type(None)):
+            #print("no")
+            return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
         while (type(img) == type(None)):
@@ -247,64 +258,75 @@ def decode():
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
-        decode_start(img)
+        #decode_start(img)
     pic_number+=1
+    #print(pic_number)
 
+    #pic_number=3
     img  = cv2.imread(r'G:/project1outpic/' + str(pic_number) + '.png')
     if (type(img) == type(None)):
         return
+    #cv2.imshow("img",img)
     contours, hierachy = locate.detect(img)
     img = locate.find(img, contours, np.squeeze(hierachy))
     if (type(img) == type(None)):
         print("未检测到定位点")
-    print(pic_number)
-    while countx < size:
-        #print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) < 115000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
-            bin1 = bin1 + '1'
-        else:
-            bin1 = bin1 + '0'
-        bin_number += 1
-        # print(bin1)
-        if bin_number == 8:
-            # bin1 = bin1 + " "
-            bin_number = 0
-        county += cube
-        # 这一块的分类讨论和encode是一样的
-        if county == size - lpsize and countx < lpsize - cube:
-            county = lpsize
-            countx += cube  # 到达下一行
-        elif county == size - lpsize and countx == lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx < size - lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx == size - lpsize - cube:
-            county = lpsize
-            countx += cube
-        elif county == size and countx >= size - lpsize:
-            county = lpsize
-            countx += cube
 
-        if countx == size and county == lpsize:
+    #print(pic_number)
+    while colorstate<2:
+        count+=1
 
-            pic_number += 1
-            #countx = 520
-            #print(pic_number)
-            img = cv2.imread(r'G:/project1outpic/' + str(
-                pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
-            # print(type(img))
-
-            #print(pic_number)
-            if type(img) != type(None):
-                contours, hierachy = locate.detect(img)
-                img=locate.find(img, contours, np.squeeze(hierachy))
-                county = lpsize
-                countx = 0
-
+        while countx < size:
+            #print(type(img))
+            #print(colorstate)
+            #print(np.sum(img[countx:countx + cube, county:county + cube,colorstate]))
+            if np.sum(img[countx:countx + cube, county:county + cube,colorstate]) < 54000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+                bin1 = bin1 + '1'
             else:
-                countx = 1150
+                bin1 = bin1 + '0'
+            #print(bin1)
+            county += cube
+            # 这一块的分类讨论和encode是一样的
+            if county == size - lpsize and countx < lpsize - cube:
+                county = lpsize
+                countx += cube  # 到达下一行
+            elif county == size - lpsize and countx == lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx < size - lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx == size - lpsize - cube:
+                county = lpsize
+                countx += cube
+            elif county == size and countx >= size - lpsize:
+                county = lpsize
+                countx += cube
+
+            if countx == size and county == lpsize:
+                colorstate+=1
+                #print(colorstate)
+                if colorstate==3:
+                    colorstate=0
+                    pic_number += 1
+                    #countx = 520
+                    #print(pic_number)
+                    img = cv2.imread(r'G:/project1outpic/' + str(
+                        pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
+                    # print(type(img))
+                #print(pic_number)
+                if type(img) != type(None):
+                    contours, hierachy = locate.detect(img)
+                    img=locate.find(img, contours, np.squeeze(hierachy))
+                    if type(img) == type(None):
+                        print("未检测到定位点")
+                    county = lpsize
+                    countx = 0
+
+                else:
+                    countx = 1150
+                    colorstate=3
+
     #print(bin1)
     print(bintostr(bin1))
 
@@ -333,10 +355,10 @@ def bintostr(s):
 
 #
 if __name__ == "__main__":
-    encode()
+    #encode()
     #ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i G:/project1pic/%d.png -y'}, outputs={'test.mp4': None})
     #ffin.run()
     #ffout = FFmpeg(inputs={'': '-i test7.mp4 -r 5 -f image2 -y'}, outputs={'G:/project1outpic/%d.png': None})
     #ffout.run()
-    #decode()
+    decode()
 
