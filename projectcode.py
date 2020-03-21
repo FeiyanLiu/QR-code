@@ -91,6 +91,16 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     # 右上角
     return img
 
+def odd_en(b):
+    odd=0
+    for i in range(7):
+        if b[i]=='0':
+            odd+=1
+    if odd%2==1:
+        b+='0'
+    else: b+='1'
+    return b
+
 def encode_start():
     size = 1000  # 图片尺寸
     cube = 20  # 每个单元的大小
@@ -127,7 +137,8 @@ def encode():
 
     for c in str1:
         b = bin(c).replace('0b', '')
-        b = b.rjust(8, '0')
+        b = b.rjust(7, '0')
+        b=odd_en(b)
         for b1 in b:
             if countx == size:
                 if colorstate==0:
@@ -335,19 +346,27 @@ def decode():
 def bintostr(s):
     count = 0
     sum = 0
+    odd = 0
     outStr = ''
     for i in s:
-        temp = (ord(i)-ord("0")) * pow(2, 7 - count)
-        sum += temp
+        if count < 7:
+            temp = (ord(i)-ord("0")) * pow(2, 6 - count)
+            sum += temp
+        if i=='0': odd+=1
+
         count += 1
         if (count == 8):
             count = 0
+            if odd%2==1:
+                odd=0
+                sum=0
+                print("Skip")
+                continue
 
             if(sum==255):
                 return outStr
             outStr = outStr + (chr(sum))
             sum = 0
-
     #print(outStr)
     return outStr
 
