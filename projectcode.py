@@ -44,7 +44,8 @@ def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，
     size = 1000  # 图片尺寸
     cube = 20  # 每个单元的大小
     lpsize = 200  # 定位点尺寸 8的倍数
-    img = np.ones((size, size,3), dtype=np.uint8)
+    rate = 2
+    img = np.ones((size, size*rate,3), dtype=np.uint8)
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
     img[int(lpsize / 8):int(lpsize * 6 / 8), int(lpsize / 8):int(lpsize * 6 / 8)] = 255
@@ -56,10 +57,10 @@ def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，
     img[size - int(lpsize * 5 / 8):size - int(lpsize * 2 / 8), int(lpsize * 2 / 8):int(lpsize * 5 / 8)] = 0
     # 左下角
 
-    img[0:int(lpsize), size - int(lpsize):size] = 255
-    img[0:int(lpsize * 7 / 8), size - int(lpsize * 7 / 8):size] = 0
-    img[int(lpsize / 8):int(lpsize * 6 / 8), size - int(lpsize * 6 / 8):size - int(lpsize / 8)] = 255
-    img[int(lpsize * 2 / 8):int(lpsize * 5 / 8), size - int(lpsize * 5 / 8):size - int(lpsize * 2 / 8)] = 0
+    img[0:int(lpsize), size*rate - int(lpsize):size*rate] = 255
+    img[0:int(lpsize * 7 / 8), size*rate - int(lpsize * 7 / 8):size*rate] = 0
+    img[int(lpsize / 8):int(lpsize * 6 / 8), size*rate - int(lpsize * 6 / 8):size*rate - int(lpsize / 8)] = 255
+    img[int(lpsize * 2 / 8):int(lpsize * 5 / 8), size*rate - int(lpsize * 5 / 8):size*rate - int(lpsize * 2 / 8)] = 0
     # 右上角
     return img
 
@@ -71,8 +72,9 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     size = 1000  # 图片尺寸
     cube = 20 # 每个单元的大小
     lpsize = 200 # 定位点尺寸 8的倍数
-    img = np.ones((size, size,3), dtype=np.uint8)
-    img[0:size,0:size]=255
+    rate = 2
+    img = np.ones((size, size*rate,3), dtype=np.uint8)
+    img[0:size,0:size*rate]=255
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
     img[int(lpsize / 8):int(lpsize * 6 / 8), int(lpsize / 8):int(lpsize * 6 / 8)] = 255
@@ -84,10 +86,10 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     img[size - int(lpsize * 5 / 8):size - int(lpsize * 2 / 8), int(lpsize * 2 / 8):int(lpsize * 5 / 8)] = 0
     # 左下角
 
-    img[0:int(lpsize), size - int(lpsize):size] = 255
-    img[0:int(lpsize * 7 / 8), size - int(lpsize * 7 / 8):size] = 0
-    img[int(lpsize / 8):int(lpsize * 6 / 8), size - int(lpsize * 6 / 8):size - int(lpsize / 8)] = 255
-    img[int(lpsize * 2 / 8):int(lpsize * 5 / 8), size - int(lpsize * 5 / 8):size - int(lpsize * 2 / 8)] = 0
+    img[0:int(lpsize), size*rate - int(lpsize):size*rate] = 255
+    img[0:int(lpsize * 7 / 8), size*rate - int(lpsize * 7 / 8):size*rate] = 0
+    img[int(lpsize / 8):int(lpsize * 6 / 8), size*rate - int(lpsize * 6 / 8):size*rate - int(lpsize / 8)] = 255
+    img[int(lpsize * 2 / 8):int(lpsize * 5 / 8), size*rate - int(lpsize * 5 / 8):size*rate - int(lpsize * 2 / 8)] = 0
     # 右上角
     return img
 
@@ -107,6 +109,7 @@ def encode_start():
     lpsize = 200  # 定位点尺寸 8的倍数
     countx = 0
     county = lpsize
+    rate =2
     QR_number = 2
     QR_print_number = 0
     img = newQrcodewhite(size, lpsize)
@@ -126,6 +129,7 @@ def encode():
     cube = 20  # 每个单元的大小
     lpsize = 200  # 定位点尺寸 8的倍数
     countx = 0
+    rate = 2
     county = lpsize
     QR_number = 3
     QR_print_number = 0
@@ -151,19 +155,19 @@ def encode():
                 img[countx:countx + cube, county:county + cube,colorstate] = 0  # 0白1黑
             county += cube
             # 按照区域对于county如何变化分类讨论
-            if county == size - lpsize and countx < lpsize - cube:
+            if county == size*rate - lpsize and countx < lpsize - cube:
                 county = lpsize
                 countx += cube  # 到达下一行
-            elif county == size - lpsize and countx == lpsize - cube:
+            elif county == size*rate - lpsize and countx == lpsize - cube:
                 county = 0
                 countx += cube
-            elif county == size and countx < size - lpsize - cube:
+            elif county == size*rate and countx < size - lpsize - cube:
                 county = 0
                 countx += cube
-            elif county == size and countx == size - lpsize - cube:
+            elif county == size*rate and countx == size - lpsize - cube:
                 county = lpsize
                 countx += cube
-            elif county == size and countx >= size - lpsize:
+            elif county == size*rate and countx >= size - lpsize:
                 county = lpsize
                 countx += cube
             if countx == size and county == lpsize:
@@ -184,11 +188,11 @@ def combine_QR_code(img):
     cube = 20  # 每个单元的大小
     lpsize =200  # 定位点尺寸 8的倍数
     #img=cv2.imread(img_path)
-    background=np.ones((size+40,size+40),dtype=np.uint8)*255
+    background=np.ones((size+40,size*rate+40),dtype=np.uint8)*255
     background=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
     #img=cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
     for i in range(20, 1020):
-        for j in range(20, 1020):
+        for j in range(20, 2020):
             background[i, j, 0] = img[i - 20, j - 20, 0]
             background[i, j, 1] = img[i - 20, j - 20, 1]
             background[i, j, 2] = img[i - 20, j - 20, 2]
@@ -202,7 +206,7 @@ def decode_start(img):
     if(type(img)==type(None)):
         return False
     size = 1000
-
+    rate = 2
     lpsize = 200+20
     cube = 20
     countx = 0
@@ -213,19 +217,19 @@ def decode_start(img):
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
-        if county == size - lpsize and countx < lpsize - cube:
+        if county == size*rate - lpsize and countx < lpsize - cube:
             county = lpsize
             countx += cube  # 到达下一行
-        elif county == size - lpsize and countx == lpsize - cube:
+        elif county == size*rate - lpsize and countx == lpsize - cube:
             county = 0
             countx += cube
-        elif county == size and countx < size - lpsize - cube:
+        elif county == size*rate and countx < size - lpsize - cube:
             county = 0
             countx += cube
-        elif county == size and countx == size - lpsize - cube:
+        elif county == size*rate and countx == size - lpsize - cube:
             county = lpsize
             countx += cube
-        elif county == size and countx >= size - lpsize:
+        elif county == size*rate and countx >= size - lpsize:
             county = lpsize
             countx += cube
     if countx == size and county == lpsize:
@@ -244,7 +248,7 @@ def decode():
     str1 = ""
     colorstate=0
     count=101
-
+    rate = 2
 
     img = cv2.imread(r'G:/project1outpic/1.png')
     if(type(img)==type(None)):
@@ -298,19 +302,19 @@ def decode():
             #print(bin1)
             county += cube
             # 这一块的分类讨论和encode是一样的
-            if county == size - lpsize and countx < lpsize - cube:
+            if county == size*rate - lpsize and countx < lpsize - cube:
                 county = lpsize
                 countx += cube  # 到达下一行
-            elif county == size - lpsize and countx == lpsize - cube:
+            elif county == size*rate - lpsize and countx == lpsize - cube:
                 county = 0
                 countx += cube
-            elif county == size and countx < size - lpsize - cube:
+            elif county == size*rate and countx < size - lpsize - cube:
                 county = 0
                 countx += cube
-            elif county == size and countx == size - lpsize - cube:
+            elif county == size*rate and countx == size - lpsize - cube:
                 county = lpsize
                 countx += cube
-            elif county == size and countx >= size - lpsize:
+            elif county == size*rate and countx >= size - lpsize:
                 county = lpsize
                 countx += cube
 
@@ -335,7 +339,7 @@ def decode():
                     countx = 0
 
                 else:
-                    countx = 1150
+                    countx = 1020
                     colorstate=3
 
     #print(bin1)
