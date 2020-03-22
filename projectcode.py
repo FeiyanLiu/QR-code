@@ -384,4 +384,3 @@ if __name__ == "__main__":
     #ffout = FFmpeg(inputs={'': '-i test7.mp4 -r 5 -f image2 -y'}, outputs={'G:/project1outpic/%d.png': None})
     #ffout.run()
     decode()
-
