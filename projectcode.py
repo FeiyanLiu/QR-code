@@ -374,35 +374,52 @@ def decode(video_path,pic_path,txt_path,check_path):
 
 def comparison():
 
-    with open(outPath1.get()+'/output.bin', 'rb') as file1:
+    with open(outPath1.get()+'/out.bin', 'rb') as file1:
         contents1 = file1.readlines()#读取每一行 存为一个列表
     with open(textPath.get(),'rb') as file2:
         contents2 = file2.readlines()
-    print(contents1,contents2)
+    #print(contents1,contents2)
     #打开编码前的文件和解码后的文件
     with open (outPath2.get()+'/vout.bin','wb') as fileOut :#创建文件并输出结果
-        i=0
-
-        for line in contents1:#解码文件中的每一行
-            j=0
-            right= struct.pack('B',0x01)
-            error=struct.pack('B',0x00)
-            for c in line:#每一行中的每一个字符
-                if(len(contents2[i])<j+1):#为防止越界 有可能解码之后的文件比原本的更长
-                    fileOut.write(error)
-                    #print("1error")
-                elif c==contents2[i][j]:
-                    fileOut.write(right)
-                else:
-                    fileOut.write(error)
-                    print(contents1[i][j],contents2[i][j])
-                    #print("2error")
-                j+=1
-            if(len(contents2[i])>len(contents1[i])):
-                for i in range (0,len(contents2[i])-len(contents1[i])):
-                    fileOut.write(error)#这里处理解码文本比原文本更短的情况 短a个比特就输出a个0
-                    #print("3error")
+        i = 0
+        for line in contents1:  # 解码文件中的每一行
+            if (len(contents2) > i):  # 如果原本的文件有第i行
+                j = 0
+                right = '1'
+                error = '0'
+                for c in line:  # 每一行中的每一个字符
+                    judge = ''
+                    if (len(contents2[i]) < j + 1):  # 为防止越界 有可能原本的文件比较短
+                        judge = '00000000'
+                    elif (c == contents2[i][j]):
+                        judge = '11111111'
+                    else:
+                        s1 = bin(c).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
+                        s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
+                        for k in range(0, 8):
+                            if (s1[k] == s2[k]):
+                                # print(s1[k],s2[k])
+                                judge += right
+                            else:
+                                judge += error
+                    fileOut.write(struct.pack('B', int(judge, 2)))
+                    j += 1
+                if (len(contents2[i]) > len(contents1[i])):
+                    for c in range(0, len(contents2[i]) - len(contents1[i])):
+                        judge = '00000000'  # 这里处理解码文本比原文本更短的情况 短a个比特就输出a个0
+                        fileOut.write(struct.pack('B', int(judge, 2)))
             i += 1
+        if (len(contents2) > len(contents1)):
+            for c in range(0, len(contents2) - len(contents1)):
+                for d in range(0, len(contents2[len(contents1) + c])):
+                    judge = '00000000'
+                    fileOut.write(struct.pack('B', int(judge, 2)))
+        elif (len(contents2) < len(contents1)):
+            for c in range(0, len(contents1) - len(contents2)):
+                for d in range(0, len(contents1[len(contents2) + c])):
+                    judge = '00000000'
+                    fileOut.write(struct.pack('B', int(judge, 2)))
+
 
 
 
@@ -497,6 +514,7 @@ if __name__ == "__main__":
         txt_path=outPath1.get()
         check_path=outPath2.get()
         decode(video_path,pic_path,txt_path,check_path)
+        comparison()
         i = messagebox.showinfo('消息框', '解码完成！请到相关路径下查看文件！')
         print(i)  # 解码结束设置弹框提醒
 
