@@ -1,5 +1,4 @@
 import os
-import struct
 import time
 import sys
 from PIL import Image
@@ -8,6 +7,7 @@ from pyzbar import pyzbar as pyzbar
 from ffmpy3 import FFmpeg
 import cv2
 import numpy as np
+import struct
 import glob as gb
 import locate
 from tkinter import messagebox
@@ -20,7 +20,24 @@ def str2bin(s):
         temp.append(bin(c).replace('0b',''))
     str_bin=' '.join(temp)
     return str_bin
-
+# def newQrcode():#初始化二维码（一个一个打出来的，三个定位点
+#     img = np.ones((512, 512), dtype=np.uint8)
+#     img[0:128, 0:128] = 255
+#     img[0:112, 0:112] = 0
+#     img[16:80, 16:80] = 255
+#     img[32:64, 32:64] = 0
+#
+#     img[384:512, 0:128] = 255
+#     img[400:512, 0:112] = 0
+#     img[432:496, 16:80] = 255
+#     img[448:480, 32:64] = 0
+#
+#
+#     img[0:128, 384:512] = 255
+#     img[0:112, 400:512] = 0
+#     img[16:80, 432:496] = 255
+#     img[32:64, 448:480] = 0
+#     return img
 def odd_en(b):
     odd=0
     for i in range(7):
@@ -163,7 +180,7 @@ def encode(text_path,video_path):
         img = combine_QR_code(img)
         cv2.imwrite(video_path+'/' + str(QR_number) + '.png', img)
     video_path+='/'
-    ffin = FFmpeg(inputs={'': '-f image2 -r 10 -i '+video_path+'/%d.png -y'}, outputs={video_path+'test.mp4': None})
+    ffin = FFmpeg(inputs={'': '-f image2 -r 8 -i '+video_path+'/%d.png -y'}, outputs={video_path+'test.mp4': None})
     ffin.run()
 
 def combine_QR_code(img):
@@ -221,8 +238,8 @@ def decode_start(img):
 def decode(video_path,pic_path,txt_path,check_path):
     #cv2.imshow("img",img)
 
-    #ffout = FFmpeg(inputs={'': '-i '+video_path+' -r 10 -f image2 -y'}, outputs={pic_path+'/%d.png': None})
-    #ffout.run()
+    ffout = FFmpeg(inputs={'': '-i '+video_path+' -r 8 -f image2 -y'}, outputs={pic_path+'/%d.png': None})
+    ffout.run()
 
 
     pic_number = 1
@@ -240,17 +257,27 @@ def decode(video_path,pic_path,txt_path,check_path):
 
     img = cv2.imread(pic_path+'/1.png')
     if(type(img)==type(None)):
+        print("end1")
         return
     contours, hierachy = locate.detect(img)
     img=locate.find(img, contours, np.squeeze(hierachy))
     #cv2.imshow("2",img)
+    while (type(img) == type(None)):
+        print("未检测到定位点1")
+        pic_number += 1
+        img = cv2.imread(pic_path + '/' + str(pic_number) + '.png')
+        if (type(img) == type(None)):
+            print("end2")
+            return
+        contours, hierachy = locate.detect(img)
+        img = locate.find(img, contours, np.squeeze(hierachy))
 
     while(not decode_start(img)):
         pic_number+=1
         #print(pic_number)
         img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
         if(type(img) == type(None)):
-            #print("no")
+            print("end3")
             return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
@@ -259,6 +286,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             pic_number+=1
             img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
             if (type(img) == type(None)):
+                print('end4')
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
@@ -269,6 +297,7 @@ def decode(video_path,pic_path,txt_path,check_path):
     #pic_number=3
     img  = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
     if (type(img) == type(None)):
+        print('end5')
         return
     #cv2.imshow("img",img)
     contours, hierachy = locate.detect(img)
@@ -329,43 +358,19 @@ def decode(video_path,pic_path,txt_path,check_path):
                     countx = 0
 
                 else:
+                    print("end6")
                     countx = 1150
                     colorstate=3
 
     #print(bin1)
     print(bintostr(bin1))
-    with open(txt_path+'/output.bin','wb')as f:
-        f.write(str.encode(bintostr(bin1)))
+    #print(str2bin(bintostr(bin1)))
+    with open(txt_path + '/out.bin', 'wb')as f:
+        f.write(bytes(bintostr(bin1),encoding='utf-8'))
+    #comparison()
 
 
-def bintostr(s):
-    count = 0
-    sum = 0
-    odd = 0
-    outStr = ''
-    for i in s:
-        #print(i)
-        if count < 7:
-            temp = (ord(i)-ord("0")) * pow(2, 6 - count)
-            sum += temp
-        if i=='0': odd+=1
-        count += 1
-        if (count == 8):
-            #print("H")
-            count = 0
-            if odd%2==1:
-                odd=0
-                sum=0
-                print("Skip")
-                continue
 
-            if(sum==255):
-                return outStr
-            outStr = outStr + (chr(sum))
-            #print(outStr)
-            sum = 0
-    print(outStr)
-    return outStr
 
 def comparison():
 
@@ -398,6 +403,62 @@ def comparison():
                     fileOut.write(error)#这里处理解码文本比原文本更短的情况 短a个比特就输出a个0
                     #print("3error")
             i += 1
+
+
+
+
+
+
+
+# def bintostr(s):
+#     count = 0
+#     sum = 0
+#     outStr = ''
+#     for i in s:
+#         temp = (ord(i)-ord("0")) * pow(2, 7 - count)
+#         sum += temp
+#         count += 1
+#         if (count == 8):
+#             count = 0
+#
+#             if(sum==255):
+#                 return outStr
+#             outStr = outStr + (chr(sum))
+#             sum = 0
+#
+#     #print(outStr)
+#     return outStr
+def bintostr(s):
+    count = 0
+    sum = 0
+    odd = 0
+    outStr = ''
+    for i in s:
+        #print(i)
+        if count < 7:
+            temp = (ord(i)-ord("0")) * pow(2, 6 - count)
+            sum += temp
+        if i=='0': odd+=1
+        count += 1
+        if (count == 8):
+            #print("H")
+            count = 0
+            if odd%2==1:
+                odd=0
+                sum=0
+                print("Skip")
+                continue
+
+            if(sum==255):
+                return outStr
+            outStr = outStr + (chr(sum))
+            #print(outStr)
+            sum = 0
+    print(outStr)
+    return outStr
+
+
+
 #
 if __name__ == "__main__":
     #encode()
@@ -436,7 +497,6 @@ if __name__ == "__main__":
         txt_path=outPath1.get()
         check_path=outPath2.get()
         decode(video_path,pic_path,txt_path,check_path)
-        comparison()
         i = messagebox.showinfo('消息框', '解码完成！请到相关路径下查看文件！')
         print(i)  # 解码结束设置弹框提醒
 
@@ -459,11 +519,11 @@ if __name__ == "__main__":
         path_ = askdirectory()
         pic_IN.set(path_)
 
-    def decode_text_path():
+    def decode_text_path1():
         path_ = askdirectory()
         outPath1.set(path_)
 
-    def decode_validtext_path():
+    def decode_text_path2():
         path_ = askdirectory()
         outPath2.set(path_)
 
@@ -485,11 +545,10 @@ if __name__ == "__main__":
 
     Label(root, text="保存解码文本:").grid(row=9, column=1, padx=20, pady=20, stick=E)
     Entry(root, textvariable=outPath1).grid(row=9, column=3, padx=20, pady=20)
-    Button(root, text="路径选择", command=decode_text_path).grid(row=9, column=4)
+    Button(root, text="路径选择", command=decode_text_path1).grid(row=9, column=4)
     Label(root, text="保存对比文件:").grid(row=11, column=1, padx=20, pady=20, stick=E)
     Entry(root, textvariable=outPath2).grid(row=11, column=3, padx=20, pady=20)
-    Button(root, text="路径选择", command=decode_validtext_path).grid(row=11, column=4)
+    Button(root, text="路径选择", command=decode_text_path2).grid(row=11, column=4)
     Button(root, text="   确认   ", command=decode_button).grid(row=13, column=4, padx=20, pady=20, stick=E)  # 点击确认启动解码
 
     root.mainloop()
-
