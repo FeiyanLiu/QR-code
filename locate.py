@@ -74,14 +74,14 @@ def triangle(rec):#是否组成三角形
                 distance_1 = np.sqrt((rec[i][0] - rec[j][0]) ** 2 + (rec[i][1] - rec[j][1]) ** 2)
                 distance_2 = np.sqrt((rec[i][0] - rec[k][0]) ** 2 + (rec[i][1] - rec[k][1]) ** 2)
                 distance_3 = np.sqrt((rec[j][0] - rec[k][0]) ** 2 + (rec[j][1] - rec[k][1]) ** 2)
-                if abs(distance_1 - distance_2) < 5:
-                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_2)) - distance_3) < 5:
+                if abs(distance_1 - distance_2)-1000 < 5:
+                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_3)) - distance_2)<5 or abs(np.sqrt(np.square(distance_2) + np.square(distance_3)) - distance_1) < 5:
+                     return i, j, k
+                elif abs(distance_1 - distance_3)-1000 < 5:
+                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_2)) - distance_3) < 5 or abs(np.sqrt(np.square(distance_3) + np.square(distance_2)) - distance_1) < 5:
                         return i, j, k
-                elif abs(distance_1 - distance_3) < 5:
-                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_3)) - distance_2) < 5:
-                        return i, j, k
-                elif abs(distance_2 - distance_3) < 5:
-                    if abs(np.sqrt(np.square(distance_2) + np.square(distance_3)) - distance_1) < 5:
+                elif abs(distance_2 - distance_3)-1000 < 5:
+                    if abs(np.sqrt(np.square(distance_2) + np.square(distance_1)) - distance_3) < 5 or abs(np.sqrt(np.square(distance_3) + np.square(distance_1)) - distance_2) < 5:
                         return i, j, k
     return -1, -1, -1
 '''
@@ -140,7 +140,7 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     #new_image=image[43:1025,403:1387]
     #cv2.imshow('img', new_image)
     #cv2.waitKey(0)
-    new_image1=cv2.resize(new_image,(1000,1000))
+    new_image1=cv2.resize(new_image,(2000,1000))
     #cv2.imshow('img', new_image1)
     #cv2.waitKey(0)
     return new_image1
