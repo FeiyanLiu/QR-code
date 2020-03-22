@@ -20,24 +20,16 @@ def str2bin(s):
         temp.append(bin(c).replace('0b',''))
     str_bin=' '.join(temp)
     return str_bin
-# def newQrcode():#初始化二维码（一个一个打出来的，三个定位点
-#     img = np.ones((512, 512), dtype=np.uint8)
-#     img[0:128, 0:128] = 255
-#     img[0:112, 0:112] = 0
-#     img[16:80, 16:80] = 255
-#     img[32:64, 32:64] = 0
-#
-#     img[384:512, 0:128] = 255
-#     img[400:512, 0:112] = 0
-#     img[432:496, 16:80] = 255
-#     img[448:480, 32:64] = 0
-#
-#
-#     img[0:128, 384:512] = 255
-#     img[0:112, 400:512] = 0
-#     img[16:80, 432:496] = 255
-#     img[32:64, 448:480] = 0
-#     return img
+
+def odd_en(b):
+    odd=0
+    for i in range(7):
+        if b[i]=='0':
+            odd+=1
+    if odd%2==1:
+        b+='0'
+    else: b+='1'
+    return b
 
 def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，三个定位点
 
@@ -130,7 +122,8 @@ def encode(text_path,video_path):
 
     for c in str1:
         b = bin(c).replace('0b', '')
-        b = b.rjust(8, '0')
+        b = b.rjust(7, '0')
+        b=odd_en(b)
         for b1 in b:
             if countx == size:
                 if colorstate==0:
@@ -348,20 +341,30 @@ def decode(video_path,pic_path,txt_path,check_path):
 def bintostr(s):
     count = 0
     sum = 0
+    odd = 0
     outStr = ''
     for i in s:
-        temp = (ord(i)-ord("0")) * pow(2, 7 - count)
-        sum += temp
+        #print(i)
+        if count < 7:
+            temp = (ord(i)-ord("0")) * pow(2, 6 - count)
+            sum += temp
+        if i=='0': odd+=1
         count += 1
         if (count == 8):
+            #print("H")
             count = 0
+            if odd%2==1:
+                odd=0
+                sum=0
+                print("Skip")
+                continue
 
             if(sum==255):
                 return outStr
             outStr = outStr + (chr(sum))
+            #print(outStr)
             sum = 0
-
-    #print(outStr)
+    print(outStr)
     return outStr
 
 def comparison():
