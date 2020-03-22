@@ -1,4 +1,5 @@
 import os
+import struct
 import time
 import sys
 from PIL import Image
@@ -340,8 +341,8 @@ def decode(video_path,pic_path,txt_path,check_path):
 
     #print(bin1)
     print(bintostr(bin1))
-    with open(txt_path+'/output.txt','w')as f:
-        f.write(bintostr(bin1))
+    with open(txt_path+'/output.bin','wb')as f:
+        f.write(str.encode(bintostr(bin1)))
 
 
 def bintostr(s):
@@ -363,8 +364,37 @@ def bintostr(s):
     #print(outStr)
     return outStr
 
+def comparison():
 
+    with open(outPath1.get()+'/output.bin', 'rb') as file1:
+        contents1 = file1.readlines()#读取每一行 存为一个列表
+    with open(textPath.get(),'rb') as file2:
+        contents2 = file2.readlines()
+    print(contents1,contents2)
+    #打开编码前的文件和解码后的文件
+    with open (outPath2.get()+'/vout.bin','wb') as fileOut :#创建文件并输出结果
+        i=0
 
+        for line in contents1:#解码文件中的每一行
+            j=0
+            right= struct.pack('B',0x01)
+            error=struct.pack('B',0x00)
+            for c in line:#每一行中的每一个字符
+                if(len(contents2[i])<j+1):#为防止越界 有可能解码之后的文件比原本的更长
+                    fileOut.write(error)
+                    #print("1error")
+                elif c==contents2[i][j]:
+                    fileOut.write(right)
+                else:
+                    fileOut.write(error)
+                    print(contents1[i][j],contents2[i][j])
+                    #print("2error")
+                j+=1
+            if(len(contents2[i])>len(contents1[i])):
+                for i in range (0,len(contents2[i])-len(contents1[i])):
+                    fileOut.write(error)#这里处理解码文本比原文本更短的情况 短a个比特就输出a个0
+                    #print("3error")
+            i += 1
 #
 if __name__ == "__main__":
     #encode()
@@ -403,6 +433,7 @@ if __name__ == "__main__":
         txt_path=outPath1.get()
         check_path=outPath2.get()
         decode(video_path,pic_path,txt_path,check_path)
+        comparison()
         i = messagebox.showinfo('消息框', '解码完成！请到相关路径下查看文件！')
         print(i)  # 解码结束设置弹框提醒
 
@@ -425,11 +456,11 @@ if __name__ == "__main__":
         path_ = askdirectory()
         pic_IN.set(path_)
 
-    def decode_text_path1():
+    def decode_text_path():
         path_ = askdirectory()
         outPath1.set(path_)
 
-    def decode_text_path2():
+    def decode_validtext_path():
         path_ = askdirectory()
         outPath2.set(path_)
 
@@ -451,10 +482,11 @@ if __name__ == "__main__":
 
     Label(root, text="保存解码文本:").grid(row=9, column=1, padx=20, pady=20, stick=E)
     Entry(root, textvariable=outPath1).grid(row=9, column=3, padx=20, pady=20)
-    Button(root, text="路径选择", command=decode_text_path1).grid(row=9, column=4)
+    Button(root, text="路径选择", command=decode_text_path).grid(row=9, column=4)
     Label(root, text="保存对比文件:").grid(row=11, column=1, padx=20, pady=20, stick=E)
     Entry(root, textvariable=outPath2).grid(row=11, column=3, padx=20, pady=20)
-    Button(root, text="路径选择", command=decode_text_path2).grid(row=11, column=4)
+    Button(root, text="路径选择", command=decode_validtext_path).grid(row=11, column=4)
     Button(root, text="   确认   ", command=decode_button).grid(row=13, column=4, padx=20, pady=20, stick=E)  # 点击确认启动解码
 
     root.mainloop()
+
