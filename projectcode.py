@@ -10,6 +10,7 @@ import numpy as np
 import struct
 import glob as gb
 import locate
+import crc8
 from tkinter import messagebox
 from tkinter.filedialog import *
 
@@ -20,33 +21,7 @@ def str2bin(s):
         temp.append(bin(c).replace('0b',''))
     str_bin=' '.join(temp)
     return str_bin
-# def newQrcode():#初始化二维码（一个一个打出来的，三个定位点
-#     img = np.ones((512, 512), dtype=np.uint8)
-#     img[0:128, 0:128] = 255
-#     img[0:112, 0:112] = 0
-#     img[16:80, 16:80] = 255
-#     img[32:64, 32:64] = 0
-#
-#     img[384:512, 0:128] = 255
-#     img[400:512, 0:112] = 0
-#     img[432:496, 16:80] = 255
-#     img[448:480, 32:64] = 0
-#
-#
-#     img[0:128, 384:512] = 255
-#     img[0:112, 400:512] = 0
-#     img[16:80, 432:496] = 255
-#     img[32:64, 448:480] = 0
-#     return img
-def odd_en(b):
-    odd=0
-    for i in range(7):
-        if b[i]=='0':
-            odd+=1
-    if odd%2==1:
-        b+='0'
-    else: b+='1'
-    return b
+
 
 def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，三个定位点
 
@@ -137,10 +112,24 @@ def encode(text_path,video_path):
     colorstate = 0
 
 
+    crc_count = 0
+    crc_data=""
     for c in str1:
-        b = bin(c).replace('0b', '')
-        b = b.rjust(7, '0')
-        b=odd_en(b)
+
+        crc_count+=1
+
+        if (crc_count%8!=0):
+            crc_data+=chr(c)
+            b = bin(c).replace('0b', '')
+            b = b.rjust(7, '0')
+        if (crc_count%8==0)or crc_count==len(str1):
+            crc_data += chr(c)
+            print(crc_data)
+            crc = crc8.en_crc8(crc_data)
+            b = bin(c).replace('0b', '')
+            b = b.rjust(7, '0')
+            b = b+crc
+            crc_data=""
         for b1 in b:
             if countx == size:
                 if colorstate==0:
@@ -392,10 +381,19 @@ def decode(video_path,pic_path,txt_path,check_path):
                     colorstate=3
 
     #print(bin1)
-    print(bintostr(bin1))
-    #print(str2bin(bintostr(bin1)))
+    #print(bintostr(bin1))
+    output = ""
+    for i in range(0,len(bin1)+64,64):
+        if i+63>len(bin1):
+            output+=crc8.de_crc8(bin1[i:])
+        else:
+            #print(bin1[i:i+63])
+            output += crc8.de_crc8(bin1[i:i+64])
+            #print(bin1[i:i+64])
+        #print(output)
+    #print(output)
     with open(txt_path + '/out.bin', 'wb')as f:
-        f.write(bytes(bintostr(bin1),encoding='utf-8'))
+        f.write(bytes(output),encoding='utf-8'))
     comparison()
 
 
