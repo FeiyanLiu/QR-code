@@ -180,7 +180,7 @@ def encode(text_path,video_path):
         img = combine_QR_code(img)
         cv2.imwrite(video_path+'/' + str(QR_number) + '.png', img)
     video_path+='/'
-    ffin = FFmpeg(inputs={'': '-f image2 -r 8 -i '+video_path+'/%d.png -y'}, outputs={video_path+'test.mp4': None})
+    ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i '+video_path+'/%d.png -y'}, outputs={video_path+'test.mp4': None})
     ffin.run()
 
 def combine_QR_code(img):
@@ -213,7 +213,7 @@ def decode_start(img):
     county = lpsize
     while countx < size:
         #print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) > 150000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+        if np.sum(img[countx:countx + cube, county:county + cube]) > 190000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -238,9 +238,8 @@ def decode_start(img):
 def decode(video_path,pic_path,txt_path,check_path):
     #cv2.imshow("img",img)
 
-    ffout = FFmpeg(inputs={'': '-i '+video_path+' -r 8 -f image2 -y'}, outputs={pic_path+'/%d.png': None})
+    ffout = FFmpeg(inputs={'': '-i '+video_path+' -r 5 -f image2 -y'}, outputs={pic_path+'/%d.png': None})
     ffout.run()
-
 
     pic_number = 1
     size = 1000
@@ -258,52 +257,68 @@ def decode(video_path,pic_path,txt_path,check_path):
     img = cv2.imread(pic_path+'/1.png')
     if(type(img)==type(None)):
         print("end1")
+        print(bintostr(bin1))
+        with open(txt_path + '/out.bin', 'wb')as f:
+            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+        comparison()
         return
     contours, hierachy = locate.detect(img)
     img=locate.find(img, contours, np.squeeze(hierachy))
     #cv2.imshow("2",img)
     while (type(img) == type(None)):
-        print("未检测到定位点1")
+        print('未检测到定位点1'+ '/' + str(pic_number))
         pic_number += 1
+        print(pic_number)
         img = cv2.imread(pic_path + '/' + str(pic_number) + '.png')
         if (type(img) == type(None)):
             print("end2")
+            print(bintostr(bin1))
+            with open(txt_path + '/out.bin', 'wb')as f:
+                f.write(bytes(bintostr(bin1), encoding='utf-8'))
+            comparison()
             return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
 
-    while(not decode_start(img)):
-        pic_number+=1
-        #print(pic_number)
-        img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
-        if(type(img) == type(None)):
-            print("end3")
-            return
-        contours, hierachy = locate.detect(img)
-        img = locate.find(img, contours, np.squeeze(hierachy))
-        while (type(img) == type(None)):
-            print("未检测到定位点1")
-            pic_number+=1
-            img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
-            if (type(img) == type(None)):
-                print('end4')
-                return
-            contours, hierachy = locate.detect(img)
-            img = locate.find(img, contours, np.squeeze(hierachy))
+    # while(not decode_start(img)):
+    #     pic_number+=1
+    #     print(pic_number)
+    #     img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
+    #     if(type(img) == type(None)):
+    #         print("end3")
+    #         return
+    #     contours, hierachy = locate.detect(img)
+    #     img = locate.find(img, contours, np.squeeze(hierachy))
+    #     while (type(img) == type(None)):
+    #         print('未检测到定位点2'+ '/' + str(pic_number))
+    #         pic_number+=1
+    #         print(pic_number)
+    #         img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
+    #         if (type(img) == type(None)):
+    #             print('end4')
+    #             with open(txt_path + '/out.bin', 'wb')as f:
+    #                 f.write(bytes(bintostr(bin1), encoding='utf-8'))
+    #             return
+    #         contours, hierachy = locate.detect(img)
+    #         img = locate.find(img, contours, np.squeeze(hierachy))
         #decode_start(img)
     pic_number+=1
     #print(pic_number)
 
-    #pic_number=3
+    pic_number=7
     img  = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
     if (type(img) == type(None)):
         print('end5')
+        print(bintostr(bin1))
+        with open(txt_path + '/out.bin', 'wb')as f:
+            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+        comparison()
         return
     #cv2.imshow("img",img)
     contours, hierachy = locate.detect(img)
     img = locate.find(img, contours, np.squeeze(hierachy))
     if (type(img) == type(None)):
-        print("未检测到定位点")
+        print('未检测到定位点3' + '/' + str(pic_number))
 
     #print(pic_number)
     while colorstate<2:
@@ -313,7 +328,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             #print(type(img))
             #print(colorstate)
             #print(np.sum(img[countx:countx + cube, county:county + cube,colorstate]))
-            if np.sum(img[countx:countx + cube, county:county + cube,colorstate]) <54000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+            if np.sum(img[countx:countx + cube, county:county + cube,colorstate]) <66000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
                 bin1 = bin1 + '1'
             else:
                 bin1 = bin1 + '0'
@@ -343,7 +358,7 @@ def decode(video_path,pic_path,txt_path,check_path):
                     colorstate=0
                     pic_number += 1
                     #countx = 520
-                    #print(pic_number)
+                    print(pic_number)
                     img = cv2.imread(pic_path+'/' + str(
                         pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
                     # print(type(img))
@@ -351,14 +366,28 @@ def decode(video_path,pic_path,txt_path,check_path):
                 if type(img) != type(None):
                     contours, hierachy = locate.detect(img)
                     img=locate.find(img, contours, np.squeeze(hierachy))
-                    if type(img) == type(None):
-                        print("未检测到定位点")
-
+                    while type(img) == type(None):
+                        print('未检测到定位点4' + '/' + str(pic_number))
+                        pic_number += 1
+                        img = cv2.imread(pic_path + '/' + str(
+                            pic_number) + '.png')
+                        if(type(img)==type(None)):
+                            print("end6")
+                            countx = 1150
+                            colorstate=3
+                            print(bintostr(bin1))
+                            with open(txt_path + '/out.bin', 'wb')as f:
+                                f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                            comparison()
+                            return
+                        else:
+                            contours, hierachy = locate.detect(img)
+                            img = locate.find(img, contours, np.squeeze(hierachy))
                     county = lpsize
                     countx = 0
 
                 else:
-                    print("end6")
+                    print("end7")
                     countx = 1150
                     colorstate=3
 
@@ -367,7 +396,8 @@ def decode(video_path,pic_path,txt_path,check_path):
     #print(str2bin(bintostr(bin1)))
     with open(txt_path + '/out.bin', 'wb')as f:
         f.write(bytes(bintostr(bin1),encoding='utf-8'))
-    #comparison()
+    comparison()
+
 
 
 
@@ -396,12 +426,21 @@ def comparison():
                     else:
                         s1 = bin(c).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
                         s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
-                        for k in range(0, 8):
-                            if (s1[k] == s2[k]):
-                                # print(s1[k],s2[k])
-                                judge += right
-                            else:
-                                judge += error
+                        lost=1
+                        for k in range(0,8):
+                            if(s1[k]=='1'):
+                                lost=0
+                                break
+
+                        if(lost==0):
+                            for k in range(0, 8):
+                                if (s1[k] == s2[k]):
+                                    # print(s1[k],s2[k])
+                                    judge += right
+                                else:
+                                    judge += error
+                        elif(lost==1):
+                            judge='00000000'
                     fileOut.write(struct.pack('B', int(judge, 2)))
                     j += 1
                 if (len(contents2[i]) > len(contents1[i])):
@@ -419,7 +458,6 @@ def comparison():
                 for d in range(0, len(contents1[len(contents2) + c])):
                     judge = '00000000'
                     fileOut.write(struct.pack('B', int(judge, 2)))
-
 
 
 
@@ -463,7 +501,8 @@ def bintostr(s):
             if odd%2==1:
                 odd=0
                 sum=0
-                print("Skip")
+                outStr = outStr + (chr(sum))
+                #print("Skip")
                 continue
 
             if(sum==255):
@@ -471,7 +510,7 @@ def bintostr(s):
             outStr = outStr + (chr(sum))
             #print(outStr)
             sum = 0
-    print(outStr)
+    #print(outStr)
     return outStr
 
 
@@ -514,7 +553,6 @@ if __name__ == "__main__":
         txt_path=outPath1.get()
         check_path=outPath2.get()
         decode(video_path,pic_path,txt_path,check_path)
-        comparison()
         i = messagebox.showinfo('消息框', '解码完成！请到相关路径下查看文件！')
         print(i)  # 解码结束设置弹框提醒
 
