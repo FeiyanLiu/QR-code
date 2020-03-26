@@ -10,9 +10,9 @@ import numpy as np
 import struct
 import glob as gb
 import locate
-import crc8
 from tkinter import messagebox
 from tkinter.filedialog import *
+import crc8
 
 
 def str2bin(s):
@@ -21,6 +21,8 @@ def str2bin(s):
         temp.append(bin(c).replace('0b',''))
     str_bin=' '.join(temp)
     return str_bin
+
+
 
 
 def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，三个定位点
@@ -110,26 +112,24 @@ def encode(text_path,video_path):
     img = newQrcode(size, lpsize)
     B, G, R = cv2.split(img)
     colorstate = 0
-
-
     crc_count = 0
     crc_data=""
+
+
     for c in str1:
-
-        crc_count+=1
-
-        if (crc_count%8!=0):
-            crc_data+=chr(c)
+        crc_count += 1
+        if (crc_count % 8 != 0):
+            crc_data += chr(c)
             b = bin(c).replace('0b', '')
             b = b.rjust(7, '0')
-        if (crc_count%8==0)or crc_count==len(str1):
+        if (crc_count % 8 == 0) or crc_count == len(str1):
             crc_data += chr(c)
             print(crc_data)
             crc = crc8.en_crc8(crc_data)
             b = bin(c).replace('0b', '')
             b = b.rjust(7, '0')
-            b = b+crc
-            crc_data=""
+            b = b + crc
+            crc_data = ""
         for b1 in b:
             if countx == size:
                 if colorstate==0:
@@ -269,32 +269,32 @@ def decode(video_path,pic_path,txt_path,check_path):
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
 
-    # while(not decode_start(img)):
-    #     pic_number+=1
-    #     print(pic_number)
-    #     img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
-    #     if(type(img) == type(None)):
-    #         print("end3")
-    #         return
-    #     contours, hierachy = locate.detect(img)
-    #     img = locate.find(img, contours, np.squeeze(hierachy))
-    #     while (type(img) == type(None)):
-    #         print('未检测到定位点2'+ '/' + str(pic_number))
-    #         pic_number+=1
-    #         print(pic_number)
-    #         img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
-    #         if (type(img) == type(None)):
-    #             print('end4')
-    #             with open(txt_path + '/out.bin', 'wb')as f:
-    #                 f.write(bytes(bintostr(bin1), encoding='utf-8'))
-    #             return
-    #         contours, hierachy = locate.detect(img)
-    #         img = locate.find(img, contours, np.squeeze(hierachy))
-        #decode_start(img)
+    while(not decode_start(img)):
+        pic_number+=1
+        print(pic_number)
+        img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
+        if(type(img) == type(None)):
+            print("end3")
+            return
+        contours, hierachy = locate.detect(img)
+        img = locate.find(img, contours, np.squeeze(hierachy))
+        while (type(img) == type(None)):
+            print('未检测到定位点2'+ '/' + str(pic_number))
+            pic_number+=1
+            print(pic_number)
+            img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
+            if (type(img) == type(None)):
+                print('end4')
+                with open(txt_path + '/out.bin', 'wb')as f:
+                    f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                return
+            contours, hierachy = locate.detect(img)
+            img = locate.find(img, contours, np.squeeze(hierachy))
+        decode_start(img)
     pic_number+=1
     #print(pic_number)
 
-    pic_number=7
+    #pic_number=7
     img  = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
     if (type(img) == type(None)):
         print('end5')
@@ -381,7 +381,6 @@ def decode(video_path,pic_path,txt_path,check_path):
                     colorstate=3
 
     #print(bin1)
-    #print(bintostr(bin1))
     output = ""
     for i in range(0,len(bin1)+64,64):
         if i+63>len(bin1):
@@ -393,9 +392,8 @@ def decode(video_path,pic_path,txt_path,check_path):
         #print(output)
     #print(output)
     with open(txt_path + '/out.bin', 'wb')as f:
-        f.write(bytes(output),encoding='utf-8'))
+        f.write(bytes(output,encoding='utf-8'))
     comparison()
-
 
 
 
@@ -461,26 +459,6 @@ def comparison():
 
 
 
-
-
-# def bintostr(s):
-#     count = 0
-#     sum = 0
-#     outStr = ''
-#     for i in s:
-#         temp = (ord(i)-ord("0")) * pow(2, 7 - count)
-#         sum += temp
-#         count += 1
-#         if (count == 8):
-#             count = 0
-#
-#             if(sum==255):
-#                 return outStr
-#             outStr = outStr + (chr(sum))
-#             sum = 0
-#
-#     #print(outStr)
-#     return outStr
 def bintostr(s):
     count = 0
     sum = 0

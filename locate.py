@@ -17,7 +17,7 @@ def detect(image):
 
     width,height=image.shape[:2][::-1]
     img_gray=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)#转灰度图
-    retval,binary=cv2.threshold(img_gray,0,255,cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)#二值化处理
+    retval,binary=cv2.threshold(img_gray,100,255,cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)#二值化处理
     contours,hierarchy=cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)#等级树结构轮廓
     #cv2.drawContours(img,contours,-1,(0,0,255),3)
     #cv2.imshow("img",image)
@@ -67,27 +67,26 @@ def detect_contours(vec):
 def triangle(rec):#是否组成三角形
     if len(rec) < 3:
         return -1, -1, -1
-    '''判断边长是否满足长方形条件'''
+    '''判断边长是否满足三角形条件'''
     for i in range(len(rec)):
         for j in range(i + 1, len(rec)):
             for k in range(j + 1, len(rec)):
                 distance_1 = np.sqrt((rec[i][0] - rec[j][0]) ** 2 + (rec[i][1] - rec[j][1]) ** 2)
                 distance_2 = np.sqrt((rec[i][0] - rec[k][0]) ** 2 + (rec[i][1] - rec[k][1]) ** 2)
                 distance_3 = np.sqrt((rec[j][0] - rec[k][0]) ** 2 + (rec[j][1] - rec[k][1]) ** 2)
-                if abs(distance_1 - distance_2) < 5:
-                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_2)) - distance_3) < 5:
+                if abs(distance_1 - distance_2) < 6:
+                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_2)) - distance_3) < 6:
                         return i, j, k
-                elif abs(distance_1 - distance_3) < 5:
-                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_3)) - distance_2) < 5:
+                elif abs(distance_1 - distance_3) < 6:
+                    if abs(np.sqrt(np.square(distance_1) + np.square(distance_3)) - distance_2) < 6:
                         return i, j, k
-                elif abs(distance_2 - distance_3) < 5:
-                    if abs(np.sqrt(np.square(distance_2) + np.square(distance_3)) - distance_1) < 5:
+                elif abs(distance_2 - distance_3) < 6:
+                    if abs(np.sqrt(np.square(distance_2) + np.square(distance_3)) - distance_1) < 6:
                         return i, j, k
     return -1, -1, -1
 '''
 用于寻找轮廓
 hierarchy[][i]，i 0-3 分别后一个轮廓的序号、前一个轮廓的序号、子轮廓的序号、父轮廓的序号
-
 '''
 def find(image,contours,hierachy,root=0):#寻找轮廓
     rec=[]
@@ -117,7 +116,7 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     #cv2.imshow('img', image)
     #cv2.waitKey(0)
     #cv2.imshow('img', result)
-    #cv2.waitKey(0)
+    cv2.waitKey(0)
     #new_image = copy.deepcopy(image)#复制备份
 
 
@@ -142,7 +141,7 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     #cv2.waitKey(0)
     new_image1=cv2.resize(new_image,(1000,1000))
     #cv2.imshow('img', new_image1)
-    #cv2.waitKey(0)
+    cv2.waitKey(0)
     return new_image1
 
 def bintostr(s):
@@ -164,61 +163,6 @@ def bintostr(s):
     #print(outStr)
     return outStr
 
-def decode(img):
-    #cv2.imshow("img",img)
-    contours, hierachy = detect(img)
-    img=find(img, contours, np.squeeze(hierachy))
-    if(type(img)==type(None)):
-        print("未检测到定位点")
-        return
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY+cv2.THRESH_BINARY_INV)
-    #cv2.imshow("img222",gray)
-    cv2.waitKey()
-    pic_number = 1
-    size = 512
-    lpsize = 128
-    cube = 16
-    countx = 0
-    county = lpsize
-    bin1 = ''
-    bin_number = 0
-    str1 = ""
-    while countx < size:
-        #print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) < 130000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
-            bin1 = bin1 + '1'
-        else:
-            bin1 = bin1 + '0'
-        bin_number += 1
-        # print(bin1)
-        if bin_number == 8:
-            # bin1 = bin1 + " "
-            bin_number = 0
-        county += cube
-        # 这一块的分类讨论和encode是一样的
-        if county == size - lpsize and countx < lpsize - cube:
-            county = lpsize
-            countx += cube  # 到达下一行
-        elif county == size - lpsize and countx == lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx < size - lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx == size - lpsize - cube:
-            county = lpsize
-            countx += cube
-        elif county == size and countx >= size - lpsize:
-            county = lpsize
-            countx += cube
-
-        if countx == size and county == lpsize:
-
-            pic_number += 1
-            countx = 520
-    print(bin1)
-    print(bintostr(bin1))
 
 #
 if __name__ == "__main__":
@@ -228,7 +172,7 @@ if __name__ == "__main__":
     img_path = r'G:/testpic/test9.jpg'
     img_path = r'G:/testpic/test1.png'
     #img_path = r'G:/test.png'
-    #img_path=r'G:/project1pic/1.png'
+    img_path=r'G:/project1outpic/7.png'
     img = cv2.imread(img_path)
     #contours,hierachy=detect(img)
     #find(img,contours,np.squeeze(hierachy))
