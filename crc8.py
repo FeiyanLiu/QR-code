@@ -79,13 +79,13 @@ def de_crc8(data):
     # print(data[:-8])
     for i in data[:-8]:
         # print(i)
-        temp = (ord(i) - ord("0")) * pow(2, 6 - count)
+        temp = (ord(i) - ord("0")) * pow(2, 7 - count)
         sum += temp
         count += 1
         if (count == 7):
             # print("H")
             count = 0
-            if (sum == 127):
+            if (sum >= 127):
                 flag += 1
                 break;
             else:
@@ -108,7 +108,7 @@ def de_crc8(data):
                     break;
         if flag > 0:
             print(flag)
-            i = (7 - flag) * 7 + 8
+            i = (7 - flag) * 8 + 8
             new_data = data[:i]
             #print(data)
             #print(new_data)
