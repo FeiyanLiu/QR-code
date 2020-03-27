@@ -383,12 +383,12 @@ def decode(video_path,pic_path,txt_path,check_path):
 
     #print(bin1)
     output = ""
-    for i in range(0,len(bin1)+64,64):
-        if i+63>len(bin1):
+    for i in range(0,len(bin1)+88,88):
+        if i+87>len(bin1):
             output+=crc8.de_crc8(bin1[i:])
         else:
             #print(bin1[i:i+63])
-            output += crc8.de_crc8(bin1[i:i+64])
+            output += crc8.de_crc8(bin1[i:i+88])
             #print(bin1[i:i+64])
         #print(output)
     #print(output)
