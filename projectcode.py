@@ -118,16 +118,16 @@ def encode(text_path,video_path,max_second):
 
     for c in str1:
         crc_count += 1
-        if (crc_count % 8 != 0):
+        if (crc_count % 10 != 0):
             crc_data += chr(c)
             b = bin(c).replace('0b', '')
-            b = b.rjust(7, '0')
-        if (crc_count % 8 == 0) or crc_count == len(str1):
+            b = b.rjust(8, '0')
+        if (crc_count % 10 == 0) or crc_count == len(str1):
             crc_data += chr(c)
             #print(crc_data)
             crc = crc8.en_crc8(crc_data)
             b = bin(c).replace('0b', '')
-            b = b.rjust(7, '0')
+            b = b.rjust(8, '0')
             b = b + crc
             crc_data = ""
         for b1 in b:
