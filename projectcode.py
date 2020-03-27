@@ -96,10 +96,10 @@ def encode_start(video_path):
     cv2.imwrite(video_path+'/'+ '2.png', img)
 
 
-def encode(text_path,video_path):
+def encode(text_path,video_path,max_second):
     file = open(text_path, 'rb')
     str1 = file.read()
-    print(str1)
+    #print(str1)
     str2 = str2bin(str1)
     size = 1000  # 图片尺寸
     cube = 20  # 每个单元的大小
@@ -114,7 +114,7 @@ def encode(text_path,video_path):
     colorstate = 0
     crc_count = 0
     crc_data=""
-
+    max_Frame=max_second*5+2
 
     for c in str1:
         crc_count += 1
@@ -124,7 +124,7 @@ def encode(text_path,video_path):
             b = b.rjust(7, '0')
         if (crc_count % 8 == 0) or crc_count == len(str1):
             crc_data += chr(c)
-            print(crc_data)
+            #print(crc_data)
             crc = crc8.en_crc8(crc_data)
             b = bin(c).replace('0b', '')
             b = b.rjust(7, '0')
@@ -134,6 +134,7 @@ def encode(text_path,video_path):
             if countx == size:
                 if colorstate==0:
                     QR_number += 1
+                    if(QR_number>max_Frame):break
                 county = lpsize
                 countx = 0
             if b1 == '0':
@@ -508,7 +509,7 @@ if __name__ == "__main__":
     pic_IN=StringVar()
     outPath1 = StringVar()
     outPath2 = StringVar()
-
+    video_second = StringVar()
 
     # 选取文件路径
     def selectFilePath():
@@ -538,7 +539,10 @@ if __name__ == "__main__":
         textpath=textPath.get()
         print(textpath)
         videopath=videoPath.get()
-        encode(textpath,videopath)
+        second=video_second.get()
+        max_second=int(second)
+        encode(textpath,videopath,max_second)
+
         i = messagebox.showinfo('消息框', '编码完成！请到相关路径下查看文件！')
         print(i)  # 编码结束设置弹框提醒
 
@@ -564,6 +568,8 @@ if __name__ == "__main__":
     Button(root, text="路径选择", command=selectFilePath).grid(row=1, column=4)
     Label(root, text="保存编码视频:").grid(row=3, column=1, padx=20, pady=20, stick=E)
     Entry(root, textvariable=videoPath).grid(row=3, column=3, padx=20, pady=20)
+    Label(root, text="目标视频长度（秒）:").grid(row=4, column=1, padx=20, pady=20, stick=E)
+    Entry(root, textvariable=video_second).grid(row=4, column=3, padx=20, pady=20)
     Button(root, text="路径选择", command=selectDirectoryPath).grid(row=3, column=4)
     Button(root, text="   确认   ", command=encode_button).grid(row=5, column=4, padx=20, pady=20, stick=E)  # 点击确认启动编码
     Label(root, text="上传解码视频:").grid(row=7, column=1, padx=20, pady=20, stick=E)
