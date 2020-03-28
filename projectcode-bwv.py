@@ -205,7 +205,7 @@ def decode_start(img):
     county = lpsize
     while countx < size:
         #print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) > 180000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+        if np.sum(img[countx:countx + cube, county:county + cube]) > 270000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -251,7 +251,7 @@ def decode(video_path,pic_path,txt_path,check_path):
         print("end1")
         print(bintostr(bin1))
         with open(txt_path + '/out.bin', 'wb')as f:
-            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+            f.write(bintostr(bin1))
         comparison()
         return
     contours, hierachy = locate.detect(img)
@@ -266,7 +266,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             print("end2")
             print(bintostr(bin1))
             with open(txt_path + '/out.bin', 'wb')as f:
-                f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                f.write(bintostr(bin1))
             comparison()
             return
         contours, hierachy = locate.detect(img)
@@ -289,7 +289,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             if (type(img) == type(None)):
                 print('end4')
                 with open(txt_path + '/out.bin', 'wb')as f:
-                    f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                    f.write(bintostr(bin1))
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
@@ -303,7 +303,7 @@ def decode(video_path,pic_path,txt_path,check_path):
         print('end5')
         #print(bintostr(bin1))
         with open(txt_path + '/out.bin', 'wb')as f:
-            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+            f.write(bintostr(bin1))
         comparison()
         return
     #cv2.imshow("img",img)
@@ -368,7 +368,7 @@ def decode(video_path,pic_path,txt_path,check_path):
                         colorstate=3
                         print(bintostr(bin1))
                         with open(txt_path + '/out.bin', 'wb')as f:
-                            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                            f.write(bintostr(bin1))
                         comparison()
                         return
                     else:
@@ -434,9 +434,9 @@ def comparison():
                         judge = '11111111'
                     else:
                         s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
-                        print(s1)
+                        #print(s1)
                         s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
-                        print(s2)
+                        #print(s2)
 
 
 
@@ -448,7 +448,7 @@ def comparison():
                             else:
                                 judge += error
 
-                    print("is "+judge)
+                    #print("is "+judge)
                     fileOut.write(struct.pack('B', int(judge, 2)))
                     j += 1
                 if (len(contents2[i]) > len(contents1[i])):
@@ -477,7 +477,7 @@ def bintostr(s):
     sum = 0
     odd = 0
     outStr = b''
-    print(s)
+    #print(s)
     for i in s:
         #print(i)
         if count < 8:
@@ -490,7 +490,7 @@ def bintostr(s):
 
             #print(hex(sum))
             outStr += bytes(chr(sum),encoding='latin1')
-            print((bin(sum)))
+            #print((bin(sum)))
             sum = 0
 
     return outStr
