@@ -82,7 +82,7 @@ def de_crc8(data):
         temp = (ord(i) - ord("0")) * pow(2, 7 - count)
         sum += temp
         count += 1
-        if (count == 7):
+        if (count == 8):
             # print("H")
             count = 0
             if (sum >= 127):
