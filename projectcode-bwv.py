@@ -1,9 +1,6 @@
 import os
 import time
 import sys
-from PIL import Image
-import qrcode
-from pyzbar import pyzbar as pyzbar
 from ffmpy3 import FFmpeg
 import cv2
 import numpy as np
@@ -33,7 +30,7 @@ def newQrcode(size, lpsize):  # 初始化二维码（一个一个打出来的，
     size = 1000  # 图片尺寸
     cube = 20  # 每个单元的大小
     lpsize = 200  # 定位点尺寸 8的倍数
-    img = np.ones((size, size), dtype=np.uint8)
+    img = np.ones((size, size,3), dtype=np.uint8)
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
     img[int(lpsize / 8):int(lpsize * 6 / 8), int(lpsize / 8):int(lpsize * 6 / 8)] = 255
@@ -60,7 +57,7 @@ def newQrcodewhite(size, lpsize):  # 初始化二维码（一个一个打出来�
     size = 1000  # 图片尺寸
     cube = 20 # 每个单元的大小
     lpsize = 200 # 定位点尺寸 8的倍数
-    img = np.ones((size, size), dtype=np.uint8)
+    img = np.ones((size, size,3), dtype=np.uint8)
     img[0:size,0:size]=255
     img[0:int(lpsize), 0:int(lpsize)] = 255
     img[0:int(lpsize * 7 / 8), 0:int(lpsize * 7 / 8)] = 0
@@ -111,38 +108,37 @@ def encode(text_path,video_path,max_second):
     encode_start(video_path)
     img = newQrcode(size, lpsize)
     #B, G, R = cv2.split(img)
-    #colorstate = 0
-    #crc_count = 0
-    #crc_data=""
+    colorstate = 0
+    crc_count = 0
+    crc_data=""
     max_Frame=max_second*5+2
-
+    print(str1)
     for c in str1:
-        # crc_count += 1
-        # if (crc_count % 8 != 0):
-        #     crc_data += chr(c)
-        #     b = bin(c).replace('0b', '')
-        #     b = b.rjust(8, '0')
-        # if (crc_count % 8 == 0) or crc_count == len(str1):
-        #     crc_data += chr(c)
-        #     #print(crc_data)
-        #     crc = crc8.en_crc8(crc_data)
-        #     b = bin(c).replace('0b', '')
-        #     b = b.rjust(8, '0')
-        #     b = b + crc
-        #     crc_data = ""
-        b=bin(c).replace('0b','')
-        b=b.rjust(8,'0')
+        crc_count += 1
+        if (crc_count % 10 != 0):
+            b = bin(c).replace('0b', '')
+            b = b.rjust(8, '0')
+            crc_data+=b
+        if (crc_count % 10 == 0) or crc_count == len(str1):
+            #print(crc_data)
+            b = bin(c).replace('0b', '')
+            b = b.rjust(8, '0')
+            crc_data += b
+            crc = crc8.en_crc8(crc_data)
+            b = b + crc
+            crc_data = ""
         #print(b)
         for b1 in b:
             if countx == size:
-                QR_number += 1
-                if(QR_number>max_Frame):break
+                if colorstate==0:
+                    QR_number += 1
+                    if (QR_number > max_Frame): break
                 county = lpsize
                 countx = 0
             if b1 == '0':
-                img[countx:countx + cube, county:county + cube] = 255  # 16*16的小方格视为为一个单位
+                img[countx:countx + cube, county:county + cube,colorstate] = 255  # 16*16的小方格视为为一个单位
             else:
-                img[countx:countx + cube, county:county + cube] = 0  # 0白1黑
+                img[countx:countx + cube, county:county + cube,colorstate] = 0  # 0白1黑
             county += cube
             # 按照区域对于county如何变化分类讨论
             if county == size - lpsize and countx < lpsize - cube:
@@ -161,13 +157,13 @@ def encode(text_path,video_path,max_second):
                 county = lpsize
                 countx += cube
             if countx == size and county == lpsize:
-
-                img=combine_QR_code(img)
-                cv2.imwrite(video_path +'/'+ str(QR_number) + '.png', img)
-                QR_print_number += 1
-                img = newQrcode(1000, 200)
-
-
+                if colorstate==2:
+                    img=combine_QR_code(img)
+                    cv2.imwrite(video_path +'/'+ str(QR_number) + '.png', img)
+                    QR_print_number += 1
+                    img = newQrcode(1000, 200)
+                    colorstate=0
+                else: colorstate+=1
     if QR_print_number < QR_number:  # 判断此时是否需要再将图片打印出来
         img = combine_QR_code(img)
         cv2.imwrite(video_path+'/' + str(QR_number) + '.png', img)
@@ -175,12 +171,13 @@ def encode(text_path,video_path,max_second):
     ffin = FFmpeg(inputs={'': '-f image2 -r 5 -i '+video_path+'/%d.png -y'}, outputs={video_path+'test.mp4': None})
     ffin.run()
 
+
 def combine_QR_code(img):
     size = 1000  # 图片尺寸
     cube = 20  # 每个单元的大小
     lpsize =200  # 定位点尺寸 8的倍数
     #img=cv2.imread(img_path)
-    background=np.ones((size+40,size+40),dtype=np.uint8)*255
+    background=np.ones((size+40,size+40,3),dtype=np.uint8)*255
     #background=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
     #img=cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
     for i in range(20, 1020):
@@ -205,7 +202,7 @@ def decode_start(img):
     county = lpsize
     while countx < size:
         #print(np.sum(img[countx:countx + cube, county:county + cube]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) > 270000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+        if np.sum(img[countx:countx + cube, county:county + cube]) > 180000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -251,7 +248,7 @@ def decode(video_path,pic_path,txt_path,check_path):
         print("end1")
         print(bintostr(bin1))
         with open(txt_path + '/out.bin', 'wb')as f:
-            f.write(bintostr(bin1))
+            f.write(bytes(bintostr(bin1), encoding='utf-8'))
         comparison()
         return
     contours, hierachy = locate.detect(img)
@@ -266,7 +263,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             print("end2")
             print(bintostr(bin1))
             with open(txt_path + '/out.bin', 'wb')as f:
-                f.write(bintostr(bin1))
+                f.write(bytes(bintostr(bin1), encoding='utf-8'))
             comparison()
             return
         contours, hierachy = locate.detect(img)
@@ -289,7 +286,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             if (type(img) == type(None)):
                 print('end4')
                 with open(txt_path + '/out.bin', 'wb')as f:
-                    f.write(bintostr(bin1))
+                    f.write(bytes(bintostr(bin1), encoding='utf-8'))
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
@@ -303,7 +300,7 @@ def decode(video_path,pic_path,txt_path,check_path):
         print('end5')
         #print(bintostr(bin1))
         with open(txt_path + '/out.bin', 'wb')as f:
-            f.write(bintostr(bin1))
+            f.write(bytes(bintostr(bin1), encoding='utf-8'))
         comparison()
         return
     #cv2.imshow("img",img)
@@ -315,94 +312,88 @@ def decode(video_path,pic_path,txt_path,check_path):
     #print(pic_number)
 
     count+=1
-
-    while countx < size:
-        #print(type(img))
-        #print(colorstate)
-        #print(np.sum(img[countx:countx + cube, county:county + cube,colorstate]))
-        if np.sum(img[countx:countx + cube, county:county + cube]) <66000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
-            bin1 = bin1 + '1'
-        else:
-            bin1 = bin1 + '0'
-        #print(bin1)
-        county += cube
-        # 这一块的分类讨论和encode是一样的
-        if county == size - lpsize and countx < lpsize - cube:
-            county = lpsize
-            countx += cube  # 到达下一行
-        elif county == size - lpsize and countx == lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx < size - lpsize - cube:
-            county = 0
-            countx += cube
-        elif county == size and countx == size - lpsize - cube:
-            county = lpsize
-            countx += cube
-        elif county == size and countx >= size - lpsize:
-            county = lpsize
-            countx += cube
-
-        if countx == size and county == lpsize:
-
-            #print(colorstate)
-
-            pic_number += 1
-            #countx = 520
-            print(pic_number)
-            img = cv2.imread(pic_path+'/' + str(
-                pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
-                    # print(type(img))
-                #print(pic_number)
-            if type(img) != type(None):
-                contours, hierachy = locate.detect(img)
-                img=locate.find(img, contours, np.squeeze(hierachy))
-                while type(img) == type(None):
-                    print('未检测到定位点4' + '/' + str(pic_number))
-                    pic_number += 1
-                    img = cv2.imread(pic_path + '/' + str(
-                        pic_number) + '.png')
-                    if(type(img)==type(None)):
-                        print("end6")
-                        countx = 1150
-                        colorstate=3
-                        print(bintostr(bin1))
-                        with open(txt_path + '/out.bin', 'wb')as f:
-                            f.write(bintostr(bin1))
-                        comparison()
-                        return
-                    else:
-                        contours, hierachy = locate.detect(img)
-                        img = locate.find(img, contours, np.squeeze(hierachy))
-                county = lpsize
-                countx = 0
-
+    colorstate=0
+    while colorstate < 3:
+        count += 1
+        while countx < size:
+            # print(type(img))
+            # print(colorstate)
+            # print(np.sum(img[countx:countx + cube, county:county + cube,colorstate]))
+            if np.sum(img[countx:countx + cube, county:county + cube,
+                      colorstate]) < 66000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
+                bin1 = bin1 + '1'
             else:
-                print("end7")
-                countx = 1150
+                bin1 = bin1 + '0'
+            # print(bin1)
+            county += cube
+            # 这一块的分类讨论和encode是一样的
+            if county == size - lpsize and countx < lpsize - cube:
+                county = lpsize
+                countx += cube  # 到达下一行
+            elif county == size - lpsize and countx == lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx < size - lpsize - cube:
+                county = 0
+                countx += cube
+            elif county == size and countx == size - lpsize - cube:
+                county = lpsize
+                countx += cube
+            elif county == size and countx >= size - lpsize:
+                county = lpsize
+                countx += cube
 
+            if countx == size and county == lpsize:
+                colorstate += 1
+                # print(colorstate)
+                if colorstate == 3:
+                    colorstate = 0
+                    pic_number += 1
+                    # countx = 520
+                    print(pic_number)
+                    img = cv2.imread(pic_path + '/' + str(
+                        pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
+                    # print(type(img))
+                # print(pic_number)
+                if type(img) != type(None):
+                    contours, hierachy = locate.detect(img)
+                    img = locate.find(img, contours, np.squeeze(hierachy))
+                    while type(img) == type(None):
+                        print('未检测到定位点4' + '/' + str(pic_number))
+                        pic_number += 1
+                        img = cv2.imread(pic_path + '/' + str(
+                            pic_number) + '.png')
+                        if (type(img) == type(None)):
+                            print("end6")
+                            countx = 1150
+                            colorstate = 3
+                            print(bintostr(bin1))
+                            with open(txt_path + '/out.bin', 'wb')as f:
+                                f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                            comparison()
+                            return
+                        else:
+                            contours, hierachy = locate.detect(img)
+                            img = locate.find(img, contours, np.squeeze(hierachy))
+                    county = lpsize
+                    countx = 0
+
+                else:
+                    print("end7")
+                    countx = 1150
+                    colorstate = 3
 
     #print(bin1)
     output = ""
-    # for i in range(0,len(bin1)+88,88):
-    #     if i+87>len(bin1):
-    #         output+=crc8.de_crc8(bin1[i:])
-    #     else:
-    #         #print(bin1[i:i+63])
-    #         output += crc8.de_crc8(bin1[i:i+88])
-    #         #print(bin1[i:i+64])
-    #     #print(output)
-    # #print(output)
-    #print(bintostr(bin1))
-    # for c in bintostr(bin1):
-    #     print(c)
-    #     b = bin(ord(c)).replace('0b', '')
-    #     b = b.rjust(8, '0')
-    #     print(b)
-
-
+    for i in range(0,len(bin1)-1,88):
+        #print(len(bin1),i,i+87)
+        if i+87>len(bin1):
+            output+=crc8.de_crc8(bin1[i:])
+        else:
+             #print(bin1[i:i+63])
+             output += crc8.de_crc8(bin1[i:i+88])
     with open(txt_path + '/out.bin', 'wb')as f:
-        f.write(bintostr(bin1))
+        f.write(bintostr(output))
     comparison()
 
 
@@ -434,9 +425,9 @@ def comparison():
                         judge = '11111111'
                     else:
                         s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
-                        #print(s1)
+                        print(s1)
                         s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
-                        #print(s2)
+                        print(s2)
 
 
 
@@ -448,7 +439,7 @@ def comparison():
                             else:
                                 judge += error
 
-                    #print("is "+judge)
+                    print("is "+judge)
                     fileOut.write(struct.pack('B', int(judge, 2)))
                     j += 1
                 if (len(contents2[i]) > len(contents1[i])):
@@ -477,7 +468,7 @@ def bintostr(s):
     sum = 0
     odd = 0
     outStr = b''
-    #print(s)
+    print(s)
     for i in s:
         #print(i)
         if count < 8:
@@ -490,7 +481,7 @@ def bintostr(s):
 
             #print(hex(sum))
             outStr += bytes(chr(sum),encoding='latin1')
-            #print((bin(sum)))
+            print((bin(sum)))
             sum = 0
 
     return outStr
