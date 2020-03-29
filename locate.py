@@ -17,11 +17,24 @@ def detect(image):
 
     width,height=image.shape[:2][::-1]
     img_gray=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)#转灰度图
-    retval,binary=cv2.threshold(img_gray,100,255,cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)#二值化处理
+    small=100
+    big=100
+    for row in range(height):
+        for col in range(width):
+            pv=img_gray[row,col]
+            if pv<small:small=pv
+            elif pv>big:big=pv
+
+    avg = int(small) + int(big)
+    avg/=2
+
+    retval,binary=cv2.threshold(img_gray,avg,255,cv2.THRESH_BINARY)#二值化处理
+
     contours,hierarchy=cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)#等级树结构轮廓
     #cv2.drawContours(img,contours,-1,(0,0,255),3)
     #cv2.imshow("img",image)
     #cv2.waitKey()
+
     return contours,hierarchy
 '''
 轮廓比例 边占比7：5
@@ -119,7 +132,7 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     cv2.waitKey(0)
     #new_image = copy.deepcopy(image)#复制备份
 
-
+    #print(box)
     #leftup=box[1][1]
     #rightup=box[0][1]
     #leftbuttom=box[0][0]
@@ -140,9 +153,27 @@ def find(image,contours,hierachy,root=0):#寻找轮廓
     #cv2.imshow('img', new_image)
     #cv2.waitKey(0)
     new_image1=cv2.resize(new_image,(1000,1000))
-    #cv2.imshow('img', new_image1)
-    cv2.waitKey(0)
-    return new_image1
+
+    width, height = new_image1.shape[:2][::-1]
+    img_gray = cv2.cvtColor(new_image1, cv2.COLOR_RGB2GRAY)  # 转灰度图
+    small = 100
+    big = 100
+    for row in range(height):
+        for col in range(width):
+            pv = img_gray[row, col]
+            if pv < small:
+                small = pv
+            elif pv > big:
+                big = pv
+
+    avg = int(small) + int(big)
+    avg/=2
+
+    retval, binary = cv2.threshold(img_gray, avg, 255, cv2.THRESH_BINARY)
+
+    #cv2.imshow('img',binary)
+    #cv2.waitKey()
+    return binary
 
 def bintostr(s):
     count = 0
@@ -176,7 +207,7 @@ if __name__ == "__main__":
     img = cv2.imread(img_path)
     #contours,hierachy=detect(img)
     #find(img,contours,np.squeeze(hierachy))
-    decode(img)
+    #decode(img)
     # img_path = r'G:/testpic/test14.jpg'
     # img=cv2.imread(img_path)
     # decode(img)
