@@ -46,31 +46,39 @@ def en_crc8(data):
         #print(a)
         new_data +=a
     #print(new_data)
-    send_data = unhexlify(bytes(new_data, "UTF-8"))
+    send_data = unhexlify(bytes(new_data, "LATIN1"))
     #print(send_data)
     crc = crc8(send_data, len(send_data)).rjust(8, '0')
+    print()
     return crc
 
 def en_s_crc8(y):
     data = str2bin(y)
     new_data = hex(int(data, 2)).replace("0x","")
     send_data = unhexlify(bytes(new_data, "UTF-8"))
-    print(send_data)
+    #print(send_data)
     crc = crc8(send_data, len(send_data)).rjust(8, '0')
     return crc
 
 def de_crc8(data):
     flag = 0
     crc = en_crc8(data[:-8])
-    #print(data,crc,data[-8:])
+    print(data,crc,data[-8:])
     for i in range(8):
         if crc[i]!=data[-8+i]:
             flag=1
             break;
     if flag==1:
-        return ""
+         a = ""
+         c = int((len(data)-8)/8)
+         for i in range(c):
+             a+="00100000"
+         print(a)
+         return  a
     else:
+        print(data[:-8])
         return data[:-8]
+
 
 if __name__ == '__main__':
     print(str2bin('1Our diurn'))
