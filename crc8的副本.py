@@ -46,7 +46,7 @@ def en_crc8(data):
         #print(a)
         new_data +=a
     #print(new_data)
-    send_data = unhexlify(bytes(new_data, "UTF-8"))
+    send_data = unhexlify(bytes(new_data, "LATIN1"))
     #print(send_data)
     crc = crc8(send_data, len(send_data)).rjust(8, '0')
     print()

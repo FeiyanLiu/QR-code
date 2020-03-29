@@ -280,6 +280,8 @@ def decode(video_path,pic_path,txt_path,check_path):
         img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
         if(type(img) == type(None)):
             print("end3")
+            with open(txt_path + '/out.bin', 'wb')as f:
+                f.write(bytes(bintostr(bin1), encoding='latin1'))
             return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
@@ -291,7 +293,7 @@ def decode(video_path,pic_path,txt_path,check_path):
             if (type(img) == type(None)):
                 print('end4')
                 with open(txt_path + '/out.bin', 'wb')as f:
-                    f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                    f.write(bytes(bintostr(bin1), encoding='latin1'))
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
@@ -305,7 +307,7 @@ def decode(video_path,pic_path,txt_path,check_path):
         print('end5')
         #print(bintostr(bin1))
         with open(txt_path + '/out.bin', 'wb')as f:
-            f.write(bytes(bintostr(bin1), encoding='utf-8'))
+            f.write(bytes(bintostr(bin1), encoding='latin1'))
         comparison()
         return
     #cv2.imshow("img",img)
@@ -374,7 +376,7 @@ def decode(video_path,pic_path,txt_path,check_path):
                             colorstate = 3
                             print(bintostr(bin1))
                             with open(txt_path + '/out.bin', 'wb')as f:
-                                f.write(bytes(bintostr(bin1), encoding='utf-8'))
+                                f.write(bytes(bintostr(bin1), encoding='latin1'))
                             comparison()
                             return
                         else:
@@ -410,8 +412,52 @@ def decode(video_path,pic_path,txt_path,check_path):
     comparison()
 
 
+def comparison():
+    with open(outPath1.get() + '/out.bin', 'rb') as file1:
+        contents1 = file1.readlines()  # 读取每一行 存为一个列表
 
-
+    with open(textPath.get(), 'rb') as file2:
+        contents2 = file2.readlines()
+    print(contents1)
+    print(contents2)
+    # 打开编码前的文件和解码后的文件
+    with open(outPath2.get() + '/vout.bin', 'wb') as fileOut:  # 创建文件并输出结果
+        j = 0
+        i = 0
+        for line in contents1:  # 解码文件中的每一行
+            right = '1'
+            error = '0'
+            line = line.decode("latin1")
+            for c in line:  # 每一行中的每一个字符
+                # if (len(contents2[i]) >= j + 1):
+                print(ord(c),contents2[i][j])
+                judge = ''
+                if (c == ' ' and contents2[i][j] != 32):
+                    judge = '00000000'
+                    print("find!")
+                elif (ord(c) == contents2[i][j]):
+                    judge = '11111111'
+                    print("correct!")
+                else:
+                    s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
+                    # print(s1)
+                    s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
+                    # print(s2)
+                    for k in range(0, 8):
+                        if (s1[k] == s2[k]):
+                            # print(s1[k],s2[k])
+                            judge += right
+                        else:
+                            judge += error
+                    print("wrong!")
+                fileOut.write(struct.pack('B', int(judge, 2)))
+                j = j + 1
+                #print(ord(c), contents2[i][j],"333")
+                if (len(contents2[i]) == j):  # 为防止越界 有可能原本的文件比较短
+                    i = i + 1
+                    j = 0
+                    print(ord(c), contents2[i][j], "*****")
+'''
 def comparison():
 
     with open(outPath1.get()+'/out.bin', 'rb') as file1:
@@ -437,10 +483,10 @@ def comparison():
                     if (len(contents2[i]) < j + 1):  # 为防止越界 有可能原本的文件比较短
                         judge = '00000000'
                         print(1,j,len(contents2[i]))
-                    elif (c==32 and contents2[i][j]!=32):
+                    elif (c==' ' and contents2[i][j]!=32):
                         judge = '00000000'
                         print("find!")
-                    elif (c == contents2[i][j]):
+                    elif (c == chr(contents2[i][j])):
                         judge = '11111111'
                         print("correct!")
                     else:
@@ -474,7 +520,7 @@ def comparison():
                 for d in range(0, len(contents1[len(contents2) + c])):
                     judge = '00000000'
                     fileOut.write(struct.pack('B', int(judge, 2)))
-
+'''
 
 
 
