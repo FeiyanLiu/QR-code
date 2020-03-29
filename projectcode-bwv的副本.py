@@ -437,10 +437,10 @@ def comparison():
                     if (len(contents2[i]) < j + 1):  # 为防止越界 有可能原本的文件比较短
                         judge = '00000000'
                         print(1,j,len(contents2[i]))
-                    elif (c==' ' and contents2[i][j]!=32):
+                    elif (c==32 and contents2[i][j]!=32):
                         judge = '00000000'
                         print("find!")
-                    elif (c == chr(contents2[i][j])):
+                    elif (c == contents2[i][j]):
                         judge = '11111111'
                         print("correct!")
                     else:
