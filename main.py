@@ -418,10 +418,7 @@ def decode(video_path,txt_path, check_path):
         # if flag == 1: wrong.append(i)
         # print(output)
     #print(bintostr(output))
-    for root,dirs,files in os.walk("."):
-        for name in files:
-            if name.endswith(".png"):
-                os.remove(os.path.join(root,name))
+
 
     with open(txt_path, 'wb')as f:
         f.write(bintostr(output))
@@ -436,6 +433,10 @@ def comparison():
         contents2 = file2.readlines()
     # print(contents1)
     # print(contents2)
+    for root,dirs,files in os.walk("."):
+        for name in files:
+            if name.endswith(".png"):
+                os.remove(os.path.join(root,name))
     # 打开编码前的文件和解码后的文件
     with open(outPath2.get(), 'wb') as fileOut:  # 创建文件并输出结果
         j = 0
