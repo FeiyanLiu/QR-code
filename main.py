@@ -207,7 +207,7 @@ def combine_QR_code(img):
 
 
 def decode_start(img):
-    if (type(img) == type(None)):
+    if(type(img)==type(None)):
         return False
     size = 1000
 
@@ -216,9 +216,9 @@ def decode_start(img):
     countx = 0
     county = lpsize
     while countx < size:
-        # print(np.sum(img[countx:countx + cube, county:county + cube]))
+        #print(np.sum(img[countx:countx + cube, county:county + cube]))
         if np.sum(img[countx:countx + cube, county:county + cube]) > 200000:  # 这里相当于是取小像素块的平均值，考虑到后面手机拍摄可能会产生色差
-            #print(np.sum(img[countx:countx + cube, county:county + cube]))
+            print(np.sum(img[countx:countx + cube, county:county + cube]))
             return False
         county += cube
         # 这一块的分类讨论和encode是一样的
@@ -240,11 +240,10 @@ def decode_start(img):
     if countx == size and county == lpsize:
         return True
 
+def decode(video_path,pic_path,txt_path,check_path):
+    #cv2.imshow("img",img)
 
-def decode(video_path,txt_path, check_path):
-    # cv2.imshow("img",img)
-
-    ffout = FFmpeg(inputs={'': '-i ' + video_path + ' -r 5 -f image2 -y'}, outputs={'%d.png': None})
+    ffout = FFmpeg(inputs={'': '-i '+video_path+' -r 5 -f image2 -y'}, outputs={pic_path+'/%d.png': None})
     ffout.run()
 
     pic_number = 1
@@ -256,81 +255,82 @@ def decode(video_path,txt_path, check_path):
     bin1 = ''
     bin_number = 0
     str1 = ""
-    colorstate = 0
-    count = 101
+    colorstate=0
+    count=101
 
-    img = cv2.imread('1.png')
-    if (type(img) == type(None)):
+
+    img = cv2.imread(pic_path+'/1.png')
+    if(type(img)==type(None)):
         print("end1")
         print(bintostr(bin1))
-        with open(txt_path, 'wb')as f:
-            f.write(bytes(bintostr(bin1), encoding='latin1'))
+        with open(txt_path + '/out.bin', 'wb')as f:
+            f.write(bytes(bintostr(bin1), encoding='utf-8'))
         comparison()
         return
     contours, hierachy = locate.detect(img)
-    img = locate.find(img, contours, np.squeeze(hierachy))
-    # cv2.imshow("2",img)
+    img=locate.find(img, contours, np.squeeze(hierachy))
+    #cv2.imshow("2",img)
     while (type(img) == type(None)):
-        print('未检测到定位点1' + '/' + str(pic_number))
+        print('未检测到定位点1'+ '/' + str(pic_number))
         pic_number += 1
         print(pic_number)
-        img = cv2.imread(str(pic_number) + '.png')
+        img = cv2.imread(pic_path + '/' + str(pic_number) + '.png')
         if (type(img) == type(None)):
             print("end2")
             print(bintostr(bin1))
-            with open(txt_path, 'wb')as f:
-                f.write(bytes(bintostr(bin1), encoding='latin1'))
+            with open(txt_path + '/out.bin', 'wb')as f:
+                f.write(bytes(bintostr(bin1), encoding='utf-8'))
             comparison()
             return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
 
-    while (not decode_start(img)):
-        pic_number += 1
+    while(not decode_start(img)):
+        pic_number+=1
         print(pic_number)
-        img = cv2.imread(str(pic_number) + '.png')
-        if (type(img) == type(None)):
+        img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
+        if(type(img) == type(None)):
             print("end3")
-            with open(txt_path, 'wb')as f:
+            with open(txt_path + '/out.bin', 'wb')as f:
                 f.write(bytes(bintostr(bin1), encoding='latin1'))
             return
         contours, hierachy = locate.detect(img)
         img = locate.find(img, contours, np.squeeze(hierachy))
         while (type(img) == type(None)):
-            print('未检测到定位点2' + '/' + str(pic_number))
-            pic_number += 1
+            print('未检测到定位点2'+ '/' + str(pic_number))
+            pic_number+=1
             print(pic_number)
-            img = cv2.imread(str(pic_number) + '.png')
+            img = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
             if (type(img) == type(None)):
                 print('end4')
-                with open(txt_path, 'wb')as f:
+                with open(txt_path + '/out.bin', 'wb')as f:
                     f.write(bytes(bintostr(bin1), encoding='latin1'))
                 return
             contours, hierachy = locate.detect(img)
             img = locate.find(img, contours, np.squeeze(hierachy))
         decode_start(img)
-    pic_number += 1
-    # print(pic_number)
+    pic_number+=1
+    #print(pic_number)
 
-    # pic_number=7
-    img = cv2.imread(str(pic_number) + '.png')
+    #pic_number=7
+    img  = cv2.imread(pic_path+'/' + str(pic_number) + '.png')
     if (type(img) == type(None)):
         print('end5')
-        # print(bintostr(bin1))
-        with open(txt_path, 'wb')as f:
+        #print(bintostr(bin1))
+        with open(txt_path + '/out.bin', 'wb')as f:
             f.write(bytes(bintostr(bin1), encoding='latin1'))
         comparison()
         return
-    # cv2.imshow("img",img)
+    #cv2.imshow("img",img)
     contours, hierachy = locate.detect(img)
     img = locate.find(img, contours, np.squeeze(hierachy))
     if (type(img) == type(None)):
         print('未检测到定位点3' + '/' + str(pic_number))
 
-    # print(pic_number)
+    #print(pic_number)
 
-    count += 1
-    colorstate = 0
+    count+=1
+    colorstate=0
     while colorstate < 3:
         count += 1
         while countx < size:
@@ -369,7 +369,7 @@ def decode(video_path,txt_path, check_path):
                     pic_number += 1
                     # countx = 520
                     print(pic_number)
-                    img = cv2.imread(str(
+                    img = cv2.imread(pic_path + '/' + str(
                         pic_number) + '.png')  # 这一段可读性太差，意思是取完全部的图（但不知道为啥林晖的那部分代码在我电脑上跑不动所以改了一下，感觉林晖那个更好
                     # print(type(img))
                 # print(pic_number)
@@ -379,14 +379,14 @@ def decode(video_path,txt_path, check_path):
                     while type(img) == type(None):
                         print('未检测到定位点4' + '/' + str(pic_number))
                         pic_number += 1
-                        img = cv2.imread(str(
+                        img = cv2.imread(pic_path + '/' + str(
                             pic_number) + '.png')
                         if (type(img) == type(None)):
                             print("end6")
                             countx = 1150
                             colorstate = 3
                             print(bintostr(bin1))
-                            with open(txt_path, 'wb')as f:
+                            with open(txt_path + '/out.bin', 'wb')as f:
                                 f.write(bytes(bintostr(bin1), encoding='latin1'))
                             comparison()
                             return
@@ -401,81 +401,117 @@ def decode(video_path,txt_path, check_path):
                     countx = 1150
                     colorstate = 3
 
-    # print(bin1)
+    #print(bin1)
     output = ""
-    for i in range(0, len(bin1) - 1, 88):
-        # print(len(bin1),i,i+87)
+    voutput = ""
+    for i in range(0,len(bin1)-1,88):
+        #print(len(bin1),i,i+87)
         flag = 0
-        if i + 87 > len(bin1):
-            # output += bin1[i:-8]
-            output += crc8.de_crc8(bin1[i:])
-            flag = crc8.de_crc8(bin1[i])
+        if i+87>len(bin1):
+            output += bin1[i:-8]
+            #a = crc8.de_crc8(bin1[i:])
+            #output += a
+            b = ""
+            len_data=len(bin1[i:-8])
+            if crc8.de_crc8(bin1[i:])==0:
+                b=b.rjust(len_data, '1')
+            else:
+                b=b.rjust(len_data, '0')
+            voutput += b
+            print(b)
         else:
-            # print(bin1[i:i+63])
-            # output += bin1[i:i+80]
-            # flag = crc8.de_crc8(bin1[i:i+88])
-            output += crc8.de_crc8(bin1[i:i + 88])
-        # if flag == 1: wrong.append(i)
-        # print(output)
-    #print(bintostr(output))
+             #print(bin1[i:i+63])
+             output += bin1[i:i+80]
+             #flag = crc8.de_crc8(bin1[i:i+88])
+             #a = crc8.de_crc8(bin1[i:i+88])
+             #output += a
+             b = ""
+             if crc8.de_crc8(bin1[i:i+88])==0:
+                b= b.rjust(80,'1')
+             else: b=b.rjust(80,'0')
+             voutput+=b
+             print(b)
 
 
-    with open(txt_path, 'wb')as f:
+
+        #if flag == 1: wrong.append(i)
+        #print(output)
+        print(voutput)
+    print(bintostr(output))
+    print(bintostr(voutput))
+    with open(txt_path + '/out.bin', 'wb')as f:
         f.write(bintostr(output))
-    comparison()
+    with open(txt_path + '/vout.bin', 'wb')as f:
+        f.write(bintostr(voutput))
+    #comparison()
+
 
 
 def comparison():
-    with open(outPath1.get(), 'rb') as file1:
+    with open(outPath1.get() + '/out.bin', 'rb') as file1:
         contents1 = file1.readlines()  # 读取每一行 存为一个列表
 
     with open(textPath.get(), 'rb') as file2:
         contents2 = file2.readlines()
-    # print(contents1)
-    # print(contents2)
-    for root,dirs,files in os.walk("."):
-        for name in files:
-            if name.endswith(".png"):
-                os.remove(os.path.join(root,name))
+    #print(contents1)
+    #print(contents2)
     # 打开编码前的文件和解码后的文件
-    with open(outPath2.get(), 'wb') as fileOut:  # 创建文件并输出结果
+    x=0
+    y=0
+    with open(outPath2.get() + '/vout.bin', 'wb') as fileOut:  # 创建文件并输出结果
         j = 0
         i = 0
+        x=0
+        y=0
         for line in contents1:  # 解码文件中的每一行
+            #print(x,y)
             right = '1'
             error = '0'
             line = line.decode("latin1")
             for c in line:  # 每一行中的每一个字符
                 # if (len(contents2[i]) >= j + 1):
                 judge = ''
-                if (c == ' ' and contents2[i][j] != 32):
+                if (c == 'A' and contents2[i][j] != 65):
+                    #s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
+                    #print(s1)
+                    #s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
+                    #print(s2)
+                    #judge = ""
+                    #for k in range(0, 8):
+                      #if (s1[k] == s2[k]):
+                         #print(s1[k],s2[k])
+                         #judge += '1'
+                      #else:
+                         #judge += '0'
                     judge = '00000000'
-                    # print("find!")
+                    #print("find!")
+                    x+=1
                 elif (ord(c) == contents2[i][j]):
                     judge = '11111111'
-                    # print("correct!")
+                    y+=1
+                    #print("correct!")
                 else:
-                    # s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
+                    #s1 = bin(ord(c)).replace('0b', '').rjust(8, '0')  # 把c转为8位二进制
                     # print(s1)
-                    # s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
+                    #s2 = bin(contents2[i][j]).replace('0b', '').rjust(8, '0')
                     # print(s2)
-                    # for k in range(0, 8):
-                    #   if (s1[k] == s2[k]):
-                    # print(s1[k],s2[k])
-                    #   judge += '1'
-                    # else:
-                    #  judge += '0'
-                    judge = '00000000'
+                    #for k in range(0, 8):
+                     #   if (s1[k] == s2[k]):
+                      #      print(s1[k],s2[k])
+                       #     judge += '1'
+                        #else:
+                         #  judge += '0'
+                    judge = '11111111'
                     #print(ord(c), contents2[i][j])
-                    #print("wrong!" + judge)
+                    print("wrong!"+judge)
                 fileOut.write(struct.pack('B', int(judge, 2)))
                 j = j + 1
-                # print(ord(c), contents2[i][j],"333")
+                #print(ord(c), contents2[i][j],"333")
                 if (len(contents2[i]) == j):  # 为防止越界 有可能原本的文件比较短
                     i = i + 1
                     j = 0
-                    # print(ord(c), contents2[i][j], "*****")
-
+                    #print(ord(c), contents2[i][j], "*****")
+    print(x,y)
 
 
 
